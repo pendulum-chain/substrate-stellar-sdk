@@ -2,8 +2,8 @@ use core::convert::TryInto;
 use sp_std::{prelude::*, vec::Vec};
 
 pub use sodalite::{
-    sign_attached, sign_attached_open, sign_keypair_seed, Sign, SignPublicKey, SignSecretKey,
-    SIGN_LEN, SIGN_PUBLIC_KEY_LEN, SIGN_SECRET_KEY_LEN,
+    sign_attached, sign_attached_open, sign_keypair_seed, Sign as Signature, SignPublicKey,
+    SignSecretKey, SIGN_LEN, SIGN_PUBLIC_KEY_LEN, SIGN_SECRET_KEY_LEN,
 };
 
 use substrate_stellar_xdr::xdr;
@@ -11,25 +11,11 @@ use substrate_stellar_xdr::xdr_codec::XdrCodec;
 
 use super::key_encoding::{Ed25519PublicKey, Ed25519SecretSeed, KeyDecodeError};
 
-#[derive(Clone, Eq, PartialEq, Debug)]
-pub struct PublicKey(Ed25519PublicKey);
+pub type PublicKey = Ed25519PublicKey;
 
 impl PublicKey {
-    fn from_binary(binary: Ed25519PublicKey) -> PublicKey {
-        PublicKey(binary)
-    }
-
-    fn from_encoded(encoded_key: &[u8]) -> Result<PublicKey, KeyDecodeError> {
-        let binary = Ed25519PublicKey::from_encoding(&encoded_key)?;
-        Ok(Self(binary))
-    }
-
-    fn get_encoded(&self) -> Vec<u8> {
-        self.0.to_encoding()
-    }
-
     fn get_signature_hint(&self) -> [u8; 4] {
-        let account_id_xdr = xdr::AccountId::PublicKeyTypeEd25519(self.0.get_binary().clone())
+        let account_id_xdr = xdr::AccountId::PublicKeyTypeEd25519(self.get_binary().clone())
             .to_xdr()
             .unwrap();
 
@@ -38,7 +24,7 @@ impl PublicKey {
             .unwrap()
     }
 
-    fn verify_signature(&self, message: &[u8], signature: &Sign) -> bool {
+    fn verify_signature(&self, message: &[u8], signature: &Signature) -> bool {
         let mut signed_message: Vec<u8> = Vec::with_capacity(message.len() + SIGN_LEN);
 
         signed_message.extend_from_slice(signature);
@@ -47,7 +33,7 @@ impl PublicKey {
         sign_attached_open(
             &mut vec![0; message.len() + SIGN_LEN],
             &signed_message,
-            self.0.get_binary(),
+            self.get_binary(),
         )
         .is_ok()
     }
@@ -72,7 +58,7 @@ impl Keypair {
         sign_keypair_seed(&mut public_key, &mut secret_key, seed.get_binary());
 
         Keypair {
-            public: PublicKey(Ed25519PublicKey::from_binary(public_key)),
+            public: PublicKey::from_binary(public_key),
             secret_seed: seed,
             signer_key: secret_key,
         }
@@ -88,7 +74,7 @@ impl Keypair {
         self.secret_seed.to_encoding()
     }
 
-    fn create_signature(&self, message: &[u8]) -> Sign {
+    fn create_signature(&self, message: &[u8]) -> Signature {
         let mut signed_message: Vec<u8> = vec![0; message.len() + SIGN_LEN];
         sign_attached(&mut signed_message[..], message, &self.signer_key);
 
