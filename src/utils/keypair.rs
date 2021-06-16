@@ -9,33 +9,27 @@ pub use sodalite::{
 use substrate_stellar_xdr::xdr;
 use substrate_stellar_xdr::xdr_codec::XdrCodec;
 
-use super::key_encoding::{
-    binary_to_key_encoding, key_encoding_to_binary, EncodingVersion, KeyDecodeError,
-};
+use super::key_encoding::{Ed25519PublicKey, Ed25519SecretSeed, KeyDecodeError};
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub struct PublicKey(SignPublicKey);
+pub struct PublicKey(Ed25519PublicKey);
 
 impl PublicKey {
-    fn from_binary(binary: [u8; 32]) -> PublicKey {
+    fn from_binary(binary: Ed25519PublicKey) -> PublicKey {
         PublicKey(binary)
     }
 
     fn from_encoded(encoded_key: &[u8]) -> Result<PublicKey, KeyDecodeError> {
-        let binary = key_encoding_to_binary(EncodingVersion::Ed25519PublicKey, &encoded_key)?;
-        if binary.len() != 32 {
-            return Err(KeyDecodeError::InvalidEncodingLength);
-        }
-        let array: [u8; 32] = binary.try_into().unwrap();
-        Ok(Self::from_binary(array))
+        let binary = Ed25519PublicKey::from_encoding(&encoded_key)?;
+        Ok(Self(binary))
     }
 
     fn get_encoded(&self) -> Vec<u8> {
-        binary_to_key_encoding(EncodingVersion::Ed25519PublicKey, &self.0)
+        self.0.to_encoding()
     }
 
     fn get_signature_hint(&self) -> [u8; 4] {
-        let account_id_xdr = xdr::AccountId::PublicKeyTypeEd25519(self.0.clone())
+        let account_id_xdr = xdr::AccountId::PublicKeyTypeEd25519(self.0.get_binary().clone())
             .to_xdr()
             .unwrap();
 
@@ -53,14 +47,11 @@ impl PublicKey {
         sign_attached_open(
             &mut vec![0; message.len() + SIGN_LEN],
             &signed_message,
-            &self.0,
+            self.0.get_binary(),
         )
         .is_ok()
     }
 }
-
-const SEED_LENGTH: usize = 32;
-type Seed = [u8; SEED_LENGTH];
 
 // the use of `secret` and `seed` is quite confusing
 // `secret` (64 bit) is what tweetnacl calls the signing secret key
@@ -69,41 +60,37 @@ type Seed = [u8; SEED_LENGTH];
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Keypair {
     public: PublicKey,
-    secret: SignSecretKey,
-    seed: Seed,
+    secret_seed: Ed25519SecretSeed,
+    signer_key: SignSecretKey,
 }
 
 impl Keypair {
-    fn from_seed(seed: &Seed) -> Keypair {
+    fn from_binary_secret(seed: Ed25519SecretSeed) -> Keypair {
         let mut public_key: SignPublicKey = [0; SIGN_PUBLIC_KEY_LEN];
         let mut secret_key: SignSecretKey = [0; SIGN_SECRET_KEY_LEN];
 
-        sign_keypair_seed(&mut public_key, &mut secret_key, seed);
+        sign_keypair_seed(&mut public_key, &mut secret_key, seed.get_binary());
 
         Keypair {
-            public: PublicKey(public_key),
-            secret: secret_key,
-            seed: seed.clone(),
+            public: PublicKey(Ed25519PublicKey::from_binary(public_key)),
+            secret_seed: seed,
+            signer_key: secret_key,
         }
     }
 
-    fn from_encoded_secret(seed: &[u8]) -> Result<Keypair, KeyDecodeError> {
-        let decoded_seed = key_encoding_to_binary(EncodingVersion::Ed25519SecretSeed, seed)?;
+    fn from_encoded_secret(encoded_seed: &[u8]) -> Result<Keypair, KeyDecodeError> {
+        let binary_seed = Ed25519SecretSeed::from_encoding(&encoded_seed)?;
 
-        Ok(Keypair::from_seed(
-            &decoded_seed
-                .try_into()
-                .map_err(|_| KeyDecodeError::InvalidEncodingLength)?,
-        ))
+        Ok(Keypair::from_binary_secret(binary_seed))
     }
 
     fn get_encoded_secret(&self) -> Vec<u8> {
-        binary_to_key_encoding(EncodingVersion::Ed25519SecretSeed, &self.seed)
+        self.secret_seed.to_encoding()
     }
 
     fn create_signature(&self, message: &[u8]) -> Sign {
         let mut signed_message: Vec<u8> = vec![0; message.len() + SIGN_LEN];
-        sign_attached(&mut signed_message[..], message, &self.secret);
+        sign_attached(&mut signed_message[..], message, &self.signer_key);
 
         signed_message.truncate(SIGN_LEN);
         signed_message.try_into().unwrap()
