@@ -1,3 +1,4 @@
+use core::convert::AsRef;
 use sp_std::vec::Vec;
 
 const ALPHABET: &'static [u8; 32] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
@@ -13,18 +14,22 @@ fn ascii_to_value_5bit(char: u8) -> Option<u8> {
     }
 }
 
-pub fn encode(binary: &[u8]) -> Vec<u8> {
-    let mut buffer = Vec::with_capacity(binary.len() * 2);
+pub fn encode<T: AsRef<[u8]>>(binary: T) -> Vec<u8> {
+    let mut buffer = Vec::with_capacity(binary.as_ref().len() * 2);
     let mut shift = 3;
     let mut carry = 0;
 
-    for byte in binary.iter() {
-        let value_5bit = carry | (*byte >> shift);
+    for byte in binary.as_ref().iter() {
+        let value_5bit = if shift == 8 {
+            carry
+        } else {
+            carry | ((*byte) >> shift)
+        };
         buffer.push(ALPHABET[(value_5bit & 0x1f) as usize]);
 
         if shift > 5 {
             shift -= 5;
-            let value_5bit = *byte >> shift;
+            let value_5bit = (*byte) >> shift;
             buffer.push(ALPHABET[(value_5bit & 0x1f) as usize]);
         }
 
@@ -40,16 +45,17 @@ pub fn encode(binary: &[u8]) -> Vec<u8> {
     buffer
 }
 
+#[derive(Debug)]
 pub enum Base32ParseError {
     InvalidCharacter { at_position: usize },
 }
 
-pub fn decode(string: &[u8]) -> Result<Vec<u8>, Base32ParseError> {
-    let mut result = Vec::with_capacity(string.len());
+pub fn decode<T: AsRef<[u8]>>(string: T) -> Result<Vec<u8>, Base32ParseError> {
+    let mut result = Vec::with_capacity(string.as_ref().len());
     let mut shift: i8 = 8;
     let mut carry: u8 = 0;
 
-    for (position, ascii) in string.iter().enumerate() {
+    for (position, ascii) in string.as_ref().iter().enumerate() {
         if *ascii as char == '=' {
             break;
         }

@@ -1,3 +1,5 @@
 mod base32;
-mod key_encoding;
-mod keypair;
+pub mod base64;
+pub mod key_encoding;
+pub mod network;
+pub mod sha256;
