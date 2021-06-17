@@ -1,36 +1,36 @@
-use core::convert::TryInto;
+use core::convert::{AsRef, TryInto};
 use sp_std::vec::Vec;
 
 use super::base32::{decode, encode, Base32ParseError};
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 
-pub struct EncodableKey<const ByteLength: usize, const VersionByte: u8>([u8; ByteLength]);
+pub struct EncodableKey<const BYTE_LENGTH: usize, const VERSION_BYTE: u8>([u8; BYTE_LENGTH]);
 
-impl<const ByteLength: usize, const VersionByte: u8> EncodableKey<ByteLength, VersionByte> {
-    pub fn from_binary(binary: [u8; ByteLength]) -> Self {
+impl<const BYTE_LENGTH: usize, const VERSION_BYTE: u8> EncodableKey<BYTE_LENGTH, VERSION_BYTE> {
+    pub fn from_binary(binary: [u8; BYTE_LENGTH]) -> Self {
         EncodableKey(binary)
     }
 
-    pub fn get_binary(&self) -> &[u8; ByteLength] {
+    pub fn get_binary(&self) -> &[u8; BYTE_LENGTH] {
         &self.0
     }
 
-    pub fn is_valid(encoded_key: &[u8]) -> bool {
+    pub fn is_valid<T: AsRef<[u8]>>(encoded_key: T) -> bool {
         match Self::from_encoding(encoded_key) {
-            Ok(decoded) => decoded.0.len() == ByteLength,
+            Ok(decoded) => decoded.0.len() == BYTE_LENGTH,
             _ => false,
         }
     }
 
-    pub fn from_encoding(encoded_key: &[u8]) -> Result<Self, KeyDecodeError> {
-        let decoded_array = decode(encoded_key)?;
-        if *encoded_key != encode(&decoded_array) {
+    pub fn from_encoding<T: AsRef<[u8]>>(encoded_key: T) -> Result<Self, KeyDecodeError> {
+        let decoded_array = decode(encoded_key.as_ref())?;
+        if *encoded_key.as_ref() != encode(&decoded_array)[..] {
             return Err(KeyDecodeError::InvalidEncoding);
         }
 
         let array_length = decoded_array.len();
-        if array_length != 3 + ByteLength {
+        if array_length != 3 + BYTE_LENGTH {
             return Err(KeyDecodeError::InvalidEncodingLength);
         }
 
@@ -44,7 +44,7 @@ impl<const ByteLength: usize, const VersionByte: u8> EncodableKey<ByteLength, Ve
             });
         }
 
-        let expected_version = VersionByte;
+        let expected_version = VERSION_BYTE;
         if decoded_array[0] != expected_version {
             return Err(KeyDecodeError::InvalidEncodingVersion {
                 expected_version: expected_version as char,
@@ -56,11 +56,11 @@ impl<const ByteLength: usize, const VersionByte: u8> EncodableKey<ByteLength, Ve
     }
 
     pub fn to_encoding(&self) -> Vec<u8> {
-        let mut unencoded_array = Vec::with_capacity(3 + ByteLength);
-        unencoded_array.push(VersionByte);
+        let mut unencoded_array = Vec::with_capacity(3 + BYTE_LENGTH);
+        unencoded_array.push(VERSION_BYTE);
         unencoded_array.extend(self.0.iter());
 
-        let crc_value = crc(&unencoded_array[..]);
+        let crc_value = crc(&unencoded_array);
         unencoded_array.push((crc_value & 0xff) as u8);
         unencoded_array.push((crc_value >> 8) as u8);
 
@@ -70,14 +70,18 @@ impl<const ByteLength: usize, const VersionByte: u8> EncodableKey<ByteLength, Ve
 
 pub type Ed25519PublicKey = EncodableKey<32, { 6 << 3 } /* G */>;
 pub type Ed25519SecretSeed = EncodableKey<32, { 18 << 3 } /* S */>;
+
+#[allow(dead_code)]
 pub type Med25519PublicKey = EncodableKey<40, { 12 << 3 } /* M */>;
+#[allow(dead_code)]
 pub type PreAuthTx = EncodableKey<32, { 19 << 3 } /* T */>;
+#[allow(dead_code)]
 pub type Sha256Hash = EncodableKey<32, { 23 << 3 } /* X */>;
 
-fn crc(byteArray: &[u8]) -> u16 {
+fn crc<T: AsRef<[u8]>>(byte_array: T) -> u16 {
     let mut crc: u16 = 0;
 
-    for byte in byteArray.iter() {
+    for byte in byte_array.as_ref().iter() {
         let mut code: u16 = crc >> 8 & 0xff;
 
         code ^= *byte as u16;
@@ -93,6 +97,7 @@ fn crc(byteArray: &[u8]) -> u16 {
     crc
 }
 
+#[derive(Debug)]
 pub enum KeyDecodeError {
     InvalidEncoding,
     InvalidEncodingLength,
