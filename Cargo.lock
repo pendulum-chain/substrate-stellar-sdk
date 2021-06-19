@@ -103,7 +103,7 @@ checksum = "35391ea974fa5ee869cb094d5b437688fbf3d8127d64d1b9fed5822a1ed39b12"
 
 [[package]]
 name = "substrate-stellar-sdk"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "base64",
  "lazy_static",
@@ -115,9 +115,9 @@ dependencies = [
 
 [[package]]
 name = "substrate-stellar-xdr"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5574447fa3ea668b26ba80305290a6a2ae1b223cfaa4adf6716e40d2e0d458f5"
+checksum = "4bac48242c7f420d3b65b1a6c85787ae9584b9328df79589863c9b0d50fa6615"
 dependencies = [
  "sp-std",
 ]

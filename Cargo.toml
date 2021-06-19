@@ -1,6 +1,6 @@
 [package]
 name = "substrate-stellar-sdk"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Torsten Stüber <torsten@satoshipay.io>"]
 edition = "2018"
 license = "Apache-2.0"
@@ -14,7 +14,7 @@ keywords = ["substrate", "Stellar"]
 
 [dependencies]
 sp-std = { default-features = false, version = "3.0.0" }
-substrate-stellar-xdr = { version = "0.2.2", features=["main-types-only"] }
+substrate-stellar-xdr = { version = "0.2.3" }
 sodalite = { version = "0.4.0" }
 sha2 = { default-features = false, version = "0.9.5" }
 lazy_static = "1.4.0"
