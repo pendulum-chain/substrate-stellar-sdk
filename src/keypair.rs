@@ -40,8 +40,8 @@ impl PublicKey {
 }
 
 // the use of `signer_key` and `secret_seed` is quite confusing
-// `signer_key` (64 bit) is what tweetnacl calls the signing secret key
-// `secret_seed` (32 bit) is what Stellar calls the secret key
+// `signer_key` (512 bit) is what tweetnacl calls the signing secret key
+// `secret_seed` (256 bit) is what Stellar calls the secret key
 // we always have: signer_key = [..secret_seed, ..public] (in JS notation)
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Keypair {

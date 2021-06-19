@@ -603,7 +603,10 @@ mod tests {
             signatures: LimitedVarArray::new(Vec::new()).unwrap(),
         });
 
-        let expected_xdr = "AAAAAgAAAABRVWJF9F/Kd+p+e65fn2mnDGH5BnlL9yXAMBTaJbnUcQAAJxAAADYZAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAQAAAADZNQkw3rURzM4K0PqSgnbIgiV3HXiZ2XengFdibJJ52wAAAAAAAAAAAJiWgAAAAAAAAAAA";
+        let expected_xdr = "AAAAAgAAAABRVWJF9F/Kd+p+e65fn2mnDGH\
+        5BnlL9yXAMBTaJbnUcQAAJxAAADYZAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAA\
+        AAAAAAAAAAAEAAAAAAAAAAQAAAADZNQkw3rURzM4K0PqSgnbIgiV3HXiZ2Xe\
+        ngFdibJJ52wAAAAAAAAAAAJiWgAAAAAAAAAAA";
         assert_eq!(
             transaction_envelope.to_xdr().as_slice(),
             crate::utils::base64::decode(expected_xdr)
@@ -614,7 +617,12 @@ mod tests {
         let signing_result = sign(&mut transaction_envelope, &TEST_NETWORK, vec![&keypair]);
         assert!(signing_result.is_ok());
 
-        let expected_signed_xdr = "AAAAAgAAAABRVWJF9F/Kd+p+e65fn2mnDGH5BnlL9yXAMBTaJbnUcQAAJxAAADYZAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAQAAAADZNQkw3rURzM4K0PqSgnbIgiV3HXiZ2XengFdibJJ52wAAAAAAAAAAAJiWgAAAAAAAAAABJbnUcQAAAEAvCLQxbuE/zeBYq5Q/17d1hvcQME5uHUJ9SE8L8E/PQHa00jfGpFrtsG+XQV0DI0AnnqQhBhHKl1l5LNpIoxIA";
+        let expected_signed_xdr = "AAAAAgAAAABRVWJF9F/Kd+p+e65\
+        fn2mnDGH5BnlL9yXAMBTaJbnUcQAAJxAAADYZAAAAAQAAAAEAAAAAAAAAAA\
+        AAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAQAAAADZNQkw3rURzM4K0PqSgnbIg\
+        iV3HXiZ2XengFdibJJ52wAAAAAAAAAAAJiWgAAAAAAAAAABJbnUcQAAAEAv\
+        CLQxbuE/zeBYq5Q/17d1hvcQME5uHUJ9SE8L8E/PQHa00jfGpFrtsG+XQV0\
+        DI0AnnqQhBhHKl1l5LNpIoxIA";
 
         assert_eq!(
             transaction_envelope.to_xdr().as_slice(),
