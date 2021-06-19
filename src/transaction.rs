@@ -1,3 +1,5 @@
+//! Transaction envelopes and signatures
+
 use core::convert::TryInto;
 use sodalite::SIGN_LEN;
 use sp_std::vec::Vec;
@@ -8,16 +10,23 @@ use substrate_stellar_xdr::{
 };
 
 use super::keypair::{Keypair, PublicKey};
-use super::utils::sha256::sha256;
-use crate::utils::{base64, network::Network, sha256::BinarySha256Hash};
+use crate::network::Network;
+use crate::utils::{base64, sha256::sha256, sha256::BinarySha256Hash};
 
+/// An error type for signing transactions
 pub enum SignatureError {
+    /// The signature has an invalid length
     InvalidLength {
         found_length: usize,
         expected_length: usize,
     },
+    /// Verification for this public key failed
     PublicKeyCantVerify,
+
+    /// The base64 encoding of the signature is invalid
     InvalidBase64Encoding,
+
+    /// The transaction envelope already has the maximal number of signatures (20)
     TooManySignatures,
 }
 
@@ -32,8 +41,14 @@ fn get_signatures(
     }
 }
 
+/// Generate a base64 encoded signature
+///
+/// Generate a signature for the `transaction_envelope`. Generate the signature
+/// for a network having the passphrase contained in `network`. The secret key for
+/// signing the envelope is provided by `keypair`.
+/// The signature is not appended to the transaction envelope.
 pub fn create_base64_signature(
-    transaction_envelope: &mut xdr::TransactionEnvelope,
+    transaction_envelope: &xdr::TransactionEnvelope,
     network: &Network,
     keypair: &Keypair,
 ) -> Vec<u8> {
@@ -41,6 +56,12 @@ pub fn create_base64_signature(
     let signature = keypair.create_signature(transaction_hash);
     base64::encode(signature)
 }
+
+/// Generate and add signatures to a transaction envelope
+///
+/// Generate and add signatures to the `transaction_envelope`. The signature
+/// is generated for a network having the passphrase contained in `network`. Generate and add
+/// one signature for each keypair in `keypairs`.
 
 pub fn sign(
     transaction_envelope: &mut xdr::TransactionEnvelope,
@@ -66,7 +87,12 @@ pub fn sign(
     Ok(())
 }
 
-pub fn add_signature<T: AsRef<[u8]>>(
+/// Add a base64 encoded signature to a transaction envelope
+///
+/// Add a previously generated base64 encoded signature to the `transaction_envelope`.
+/// This function verifies whether the signature is valid given the passphrase contained in `network`
+/// and the `public_key`.
+pub fn add_base64_signature<T: AsRef<[u8]>>(
     transaction_envelope: &mut xdr::TransactionEnvelope,
     network: &Network,
     base64_signature: T,
@@ -102,7 +128,7 @@ pub fn add_signature<T: AsRef<[u8]>>(
     Ok(())
 }
 
-pub fn get_hash(
+fn get_hash(
     transaction_envelope: &xdr::TransactionEnvelope,
     network: &Network,
 ) -> BinarySha256Hash {
@@ -168,8 +194,8 @@ mod tests {
 
     use crate::{
         keypair::{Keypair, PublicKey},
+        network::TEST_NETWORK,
         transaction::sign,
-        utils::network::TEST_NETWORK,
     };
 
     fn binary_public(public: &str) -> Uint256 {
@@ -221,8 +247,7 @@ mod tests {
         kAAAAACZw6OsAAAAAAAAAAay59LIAAABAdMmVEkeQO1ygJEUCpGk5qUzfhHWUD3qikrA\
         7ZXRpe2n5JsRoJot88+Fc+ayFPJoIsKsP457TwyzTorPwuUGxBQ==";
 
-        let envelope =
-            TransactionEnvelope::from_xdr(crate::utils::base64::decode(envelope).unwrap());
+        let envelope = TransactionEnvelope::from_base64_xdr(envelope);
         assert!(envelope.is_ok());
         let envelope = match envelope.unwrap() {
             TransactionEnvelope::EnvelopeTypeTx(envelope) => envelope,
@@ -603,21 +628,19 @@ mod tests {
             signatures: LimitedVarArray::new(Vec::new()).unwrap(),
         });
 
-        let expected_xdr = "AAAAAgAAAABRVWJF9F/Kd+p+e65fn2mnDGH\
+        let expected_xdr = b"AAAAAgAAAABRVWJF9F/Kd+p+e65fn2mnDGH\
         5BnlL9yXAMBTaJbnUcQAAJxAAADYZAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAA\
         AAAAAAAAAAAEAAAAAAAAAAQAAAADZNQkw3rURzM4K0PqSgnbIgiV3HXiZ2Xe\
         ngFdibJJ52wAAAAAAAAAAAJiWgAAAAAAAAAAA";
         assert_eq!(
-            transaction_envelope.to_xdr().as_slice(),
-            crate::utils::base64::decode(expected_xdr)
-                .unwrap()
-                .as_slice()
+            transaction_envelope.to_base64_xdr().as_slice(),
+            &expected_xdr[..]
         );
 
         let signing_result = sign(&mut transaction_envelope, &TEST_NETWORK, vec![&keypair]);
         assert!(signing_result.is_ok());
 
-        let expected_signed_xdr = "AAAAAgAAAABRVWJF9F/Kd+p+e65\
+        let expected_signed_xdr = b"AAAAAgAAAABRVWJF9F/Kd+p+e65\
         fn2mnDGH5BnlL9yXAMBTaJbnUcQAAJxAAADYZAAAAAQAAAAEAAAAAAAAAAA\
         AAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAQAAAADZNQkw3rURzM4K0PqSgnbIg\
         iV3HXiZ2XengFdibJJ52wAAAAAAAAAAAJiWgAAAAAAAAAABJbnUcQAAAEAv\
@@ -625,10 +648,8 @@ mod tests {
         DI0AnnqQhBhHKl1l5LNpIoxIA";
 
         assert_eq!(
-            transaction_envelope.to_xdr().as_slice(),
-            crate::utils::base64::decode(expected_signed_xdr)
-                .unwrap()
-                .as_slice()
+            transaction_envelope.to_base64_xdr().as_slice(),
+            &expected_signed_xdr[..]
         );
     }
 }
