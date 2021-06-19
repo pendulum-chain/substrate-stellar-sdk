@@ -1,5 +1,10 @@
+//! An SDK for Stellar that can be used in Substrate projects
+
 #![cfg_attr(not(test), no_std)]
 
 pub mod keypair;
+pub mod network;
 pub mod transaction;
-pub mod utils;
+mod utils;
+
+pub use utils::key_encoding;

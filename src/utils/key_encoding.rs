@@ -1,3 +1,5 @@
+//! Stellar encoding of keys
+
 use core::convert::{AsRef, TryInto};
 use sp_std::vec::Vec;
 
@@ -5,17 +7,26 @@ use super::base32::{decode, encode, Base32ParseError};
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 
+/// The basic type for a key that implements Stellar's key encoding
+///
+/// The `BYTE_LENGTH` parameter determines the byte length of the key.
+/// The `VERSION_BYTE` determines the prefix byte used for the encoding. It is used
+/// to easily distinguish different kinds of keys.
+/// A key encoding is an ASCII string.
 pub struct EncodableKey<const BYTE_LENGTH: usize, const VERSION_BYTE: u8>([u8; BYTE_LENGTH]);
 
 impl<const BYTE_LENGTH: usize, const VERSION_BYTE: u8> EncodableKey<BYTE_LENGTH, VERSION_BYTE> {
+    /// Create a new `EncodableKey` from a raw binary key
     pub fn from_binary(binary: [u8; BYTE_LENGTH]) -> Self {
         EncodableKey(binary)
     }
 
+    /// Return the raw binary key
     pub fn get_binary(&self) -> &[u8; BYTE_LENGTH] {
         &self.0
     }
 
+    /// Check whether a given ASCII string (given as `&[u8]`) represents a valid encoding
     pub fn is_valid<T: AsRef<[u8]>>(encoded_key: T) -> bool {
         match Self::from_encoding(encoded_key) {
             Ok(decoded) => decoded.0.len() == BYTE_LENGTH,
@@ -23,6 +34,7 @@ impl<const BYTE_LENGTH: usize, const VERSION_BYTE: u8> EncodableKey<BYTE_LENGTH,
         }
     }
 
+    /// Create a new `EncodableKey` from a key encoding given as an ASCII string (as `&[u8]`)
     pub fn from_encoding<T: AsRef<[u8]>>(encoded_key: T) -> Result<Self, KeyDecodeError> {
         let decoded_array = decode(encoded_key.as_ref())?;
         if *encoded_key.as_ref() != encode(&decoded_array)[..] {
@@ -55,6 +67,7 @@ impl<const BYTE_LENGTH: usize, const VERSION_BYTE: u8> EncodableKey<BYTE_LENGTH,
         Ok(Self(decoded_array[1..array_length - 2].try_into().unwrap()))
     }
 
+    /// Return the key encoding as an ASCII string (given as `Vec<u8>`)
     pub fn to_encoding(&self) -> Vec<u8> {
         let mut unencoded_array = Vec::with_capacity(3 + BYTE_LENGTH);
         unencoded_array.push(VERSION_BYTE);
@@ -68,7 +81,10 @@ impl<const BYTE_LENGTH: usize, const VERSION_BYTE: u8> EncodableKey<BYTE_LENGTH,
     }
 }
 
+/// The public key of an Ed25519 signing keypair
 pub type Ed25519PublicKey = EncodableKey<32, { 6 << 3 } /* G */>;
+
+/// The secret seed of an Ed25519 signing keypair
 pub type Ed25519SecretSeed = EncodableKey<32, { 18 << 3 } /* S */>;
 
 #[allow(dead_code)]
@@ -97,18 +113,25 @@ fn crc<T: AsRef<[u8]>>(byte_array: T) -> u16 {
     crc
 }
 
+/// Error type for key decoding errors
 #[derive(Debug)]
 pub enum KeyDecodeError {
+    /// The encoding can be decoded but is not the canonical encoding of the underlying binary key
     InvalidEncoding,
+
+    /// The encoding has an invalid length
     InvalidEncodingLength,
+
+    /// The initial version byte is invalid for this `EncodableKey`
     InvalidEncodingVersion {
         expected_version: char,
         found_version: char,
     },
-    InvalidChecksum {
-        expected: u16,
-        found: u16,
-    },
+
+    /// The checksum in the encoding is invaliid
+    InvalidChecksum { expected: u16, found: u16 },
+
+    /// The base32 encoding is invalid
     InvalidBase32(Base32ParseError),
 }
 
