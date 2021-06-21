@@ -7,4 +7,4 @@ pub mod network;
 pub mod transaction;
 mod utils;
 
-pub use utils::key_encoding;
+pub use substrate_stellar_xdr::{xdr, xdr_codec::XdrCodec};
