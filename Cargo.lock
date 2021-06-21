@@ -103,7 +103,7 @@ checksum = "35391ea974fa5ee869cb094d5b437688fbf3d8127d64d1b9fed5822a1ed39b12"
 
 [[package]]
 name = "substrate-stellar-sdk"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "base64",
  "lazy_static",

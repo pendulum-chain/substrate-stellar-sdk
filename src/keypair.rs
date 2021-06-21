@@ -1,7 +1,7 @@
 //! Ed25519 keypairs and public keys
 
 use core::convert::{AsRef, TryInto};
-use sp_std::{prelude::*, vec::Vec};
+use sp_std::{prelude::*, vec, vec::Vec};
 
 use sodalite::{
     sign_attached, sign_attached_open, sign_keypair_seed, SignPublicKey, SignSecretKey, SIGN_LEN,
