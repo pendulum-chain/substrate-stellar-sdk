@@ -101,8 +101,7 @@ dependencies = [
 [[package]]
 name = "sp-std"
 version = "3.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "35391ea974fa5ee869cb094d5b437688fbf3d8127d64d1b9fed5822a1ed39b12"
+source = "git+https://github.com/paritytech/substrate#4e75f511e1357cf54c31d9e82d0cf3e39a2b8c28"
 
 [[package]]
 name = "spin"
@@ -125,8 +124,6 @@ dependencies = [
 [[package]]
 name = "substrate-stellar-xdr"
 version = "0.2.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "68d258a08d467d492bcaab0414be2a0570deb2f14bf27b8ca29e00fdbe217396"
 dependencies = [
  "base64",
  "sp-std",
