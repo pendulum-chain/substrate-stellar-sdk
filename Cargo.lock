@@ -1688,17 +1688,6 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
- "substrate-stellar-xdr",
-]
-
-[[package]]
-name = "substrate-stellar-xdr"
-version = "0.2.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "68d258a08d467d492bcaab0414be2a0570deb2f14bf27b8ca29e00fdbe217396"
-dependencies = [
- "base64",
- "sp-std",
 ]
 
 [[package]]

@@ -1,17 +1,53 @@
 //! Transaction envelopes and signatures
 
-use core::convert::TryInto;
-use sodalite::SIGN_LEN;
-use sp_std::vec::Vec;
-use substrate_stellar_xdr::{
+use super::{
     compound_types::{LimitedVarArray, LimitedVarOpaque},
-    xdr::{self, DecoratedSignature},
+    types::{
+        DecoratedSignature, Memo, MuxedAccount, PublicKey, TimeBounds, Transaction,
+        TransactionEnvelope, TransactionExt, TransactionV1Envelope,
+    },
     xdr_codec::XdrCodec,
 };
+use core::convert::TryInto;
+use sodalite::SIGN_LEN;
+use sp_std::{prelude::*, vec::Vec};
 
-use super::keypair::{Keypair, PublicKey};
-use crate::network::Network;
-use crate::utils::{base64, sha256::sha256, sha256::BinarySha256Hash};
+use crate::{
+    keypair::SecretKey,
+    stellar::types::{
+        TransactionSignaturePayload, TransactionSignaturePayloadTaggedTransaction, TransactionV0Ext,
+    },
+};
+use crate::{network::Network, utils::key_encoding::KeyDecodeError};
+use crate::{
+    utils::{base64, sha256::sha256, sha256::BinarySha256Hash},
+    BASE_FEE_STROOPS,
+};
+
+pub fn create_transaction_envelope(
+    source_account: &str,
+    sequence_number: i64,
+    fee: Option<u32>,
+    time_bounds: Option<TimeBounds>,
+    memo: Option<Memo>,
+) -> Result<TransactionEnvelope, KeyDecodeError> {
+    let source_public_key = PublicKey::from_encoding(source_account)?;
+
+    let transaction = Transaction {
+        source_account: MuxedAccount::KeyTypeEd25519(source_public_key.into_binary()),
+        fee: fee.unwrap_or(BASE_FEE_STROOPS),
+        seq_num: sequence_number,
+        time_bounds,
+        memo: memo.unwrap_or(Memo::MemoNone),
+        operations: LimitedVarArray::new_empty(),
+        ext: TransactionExt::V0,
+    };
+
+    Ok(TransactionEnvelope::EnvelopeTypeTx(TransactionV1Envelope {
+        tx: transaction,
+        signatures: LimitedVarArray::new_empty(),
+    }))
+}
 
 /// An error type for signing transactions
 pub enum SignatureError {
@@ -31,12 +67,12 @@ pub enum SignatureError {
 }
 
 fn get_signatures(
-    transaction_envelope: &mut xdr::TransactionEnvelope,
+    transaction_envelope: &mut TransactionEnvelope,
 ) -> &mut LimitedVarArray<DecoratedSignature, 20> {
     match transaction_envelope {
-        xdr::TransactionEnvelope::EnvelopeTypeTxV0(envelope) => &mut envelope.signatures,
-        xdr::TransactionEnvelope::EnvelopeTypeTx(envelope) => &mut envelope.signatures,
-        xdr::TransactionEnvelope::EnvelopeTypeTxFeeBump(envelope) => &mut envelope.signatures,
+        TransactionEnvelope::EnvelopeTypeTxV0(envelope) => &mut envelope.signatures,
+        TransactionEnvelope::EnvelopeTypeTx(envelope) => &mut envelope.signatures,
+        TransactionEnvelope::EnvelopeTypeTxFeeBump(envelope) => &mut envelope.signatures,
         _ => unreachable!("Invalid transaction envelope type"),
     }
 }
@@ -48,9 +84,9 @@ fn get_signatures(
 /// signing the envelope is provided by `keypair`.
 /// The signature is not appended to the transaction envelope.
 pub fn create_base64_signature(
-    transaction_envelope: &xdr::TransactionEnvelope,
+    transaction_envelope: &TransactionEnvelope,
     network: &Network,
-    keypair: &Keypair,
+    keypair: &SecretKey,
 ) -> Vec<u8> {
     let transaction_hash = get_hash(transaction_envelope, network);
     let signature = keypair.create_signature(transaction_hash);
@@ -64,9 +100,9 @@ pub fn create_base64_signature(
 /// one signature for each keypair in `keypairs`.
 
 pub fn sign(
-    transaction_envelope: &mut xdr::TransactionEnvelope,
+    transaction_envelope: &mut TransactionEnvelope,
     network: &Network,
-    keypairs: Vec<&Keypair>,
+    keypairs: Vec<&SecretKey>,
 ) -> Result<(), SignatureError> {
     let transaction_hash = get_hash(transaction_envelope, network);
 
@@ -77,7 +113,7 @@ pub fn sign(
         let hint = keypair.get_public().get_signature_hint();
 
         signatures
-            .push(xdr::DecoratedSignature {
+            .push(DecoratedSignature {
                 hint,
                 signature: LimitedVarOpaque::new(Vec::from(signature)).unwrap(),
             })
@@ -93,7 +129,7 @@ pub fn sign(
 /// This function verifies whether the signature is valid given the passphrase contained in `network`
 /// and the `public_key`.
 pub fn add_base64_signature<T: AsRef<[u8]>>(
-    transaction_envelope: &mut xdr::TransactionEnvelope,
+    transaction_envelope: &mut TransactionEnvelope,
     network: &Network,
     base64_signature: T,
     public_key: &PublicKey,
@@ -119,7 +155,7 @@ pub fn add_base64_signature<T: AsRef<[u8]>>(
     let signatures = get_signatures(transaction_envelope);
 
     signatures
-        .push(xdr::DecoratedSignature {
+        .push(DecoratedSignature {
             hint: public_key.get_signature_hint(),
             signature: LimitedVarOpaque::new(signature).unwrap(),
         })
@@ -128,16 +164,13 @@ pub fn add_base64_signature<T: AsRef<[u8]>>(
     Ok(())
 }
 
-fn get_hash(
-    transaction_envelope: &xdr::TransactionEnvelope,
-    network: &Network,
-) -> BinarySha256Hash {
+fn get_hash(transaction_envelope: &TransactionEnvelope, network: &Network) -> BinarySha256Hash {
     let network_id = network.get_id().clone();
 
     let tagged_transaction = match transaction_envelope {
-        xdr::TransactionEnvelope::EnvelopeTypeTxV0(transaction_envelope) => {
-            let transaction = xdr::Transaction {
-                source_account: xdr::MuxedAccount::KeyTypeEd25519(
+        TransactionEnvelope::EnvelopeTypeTxV0(transaction_envelope) => {
+            let transaction = Transaction {
+                source_account: MuxedAccount::KeyTypeEd25519(
                     transaction_envelope.tx.source_account_ed25519,
                 ),
                 fee: transaction_envelope.tx.fee,
@@ -146,23 +179,21 @@ fn get_hash(
                 memo: transaction_envelope.tx.memo.clone(),
                 operations: transaction_envelope.tx.operations.clone(),
                 ext: match transaction_envelope.tx.ext {
-                    xdr::TransactionV0Ext::V0 => xdr::TransactionExt::V0,
-                    xdr::TransactionV0Ext::Default(default) => {
-                        xdr::TransactionExt::Default(default)
-                    }
+                    TransactionV0Ext::V0 => TransactionExt::V0,
+                    TransactionV0Ext::Default(default) => TransactionExt::Default(default),
                 },
             };
-            xdr::TransactionSignaturePayloadTaggedTransaction::EnvelopeTypeTx(transaction)
+            TransactionSignaturePayloadTaggedTransaction::EnvelopeTypeTx(transaction)
         }
 
-        xdr::TransactionEnvelope::EnvelopeTypeTx(transaction_envelope) => {
-            xdr::TransactionSignaturePayloadTaggedTransaction::EnvelopeTypeTx(
+        TransactionEnvelope::EnvelopeTypeTx(transaction_envelope) => {
+            TransactionSignaturePayloadTaggedTransaction::EnvelopeTypeTx(
                 transaction_envelope.tx.clone(),
             )
         }
 
-        xdr::TransactionEnvelope::EnvelopeTypeTxFeeBump(transaction_envelope) => {
-            xdr::TransactionSignaturePayloadTaggedTransaction::EnvelopeTypeTxFeeBump(
+        TransactionEnvelope::EnvelopeTypeTxFeeBump(transaction_envelope) => {
+            TransactionSignaturePayloadTaggedTransaction::EnvelopeTypeTxFeeBump(
                 transaction_envelope.tx.clone(),
             )
         }
@@ -170,7 +201,7 @@ fn get_hash(
         _ => unimplemented!("This type of transaction envelope is not supported"),
     };
 
-    let signature_payload = xdr::TransactionSignaturePayload {
+    let signature_payload = TransactionSignaturePayload {
         network_id,
         tagged_transaction,
     };
@@ -182,27 +213,21 @@ fn get_hash(
 mod tests {
     use sp_std::{prelude::*, vec::Vec};
 
-    use substrate_stellar_xdr::{
+    use crate::stellar::{
         compound_types::LimitedVarArray,
-        xdr::{
-            self, Asset, AssetAlphaNum4, ManageSellOfferOp, Memo, MuxedAccount, Operation,
-            OperationBody, PaymentOp, Price, TimeBounds, Transaction, TransactionEnvelope,
+        transaction::sign,
+        types::{
+            Asset, AssetAlphaNum4, ManageSellOfferOp, Memo, MuxedAccount, Operation, OperationBody,
+            PaymentOp, Price, PublicKey, TimeBounds, Transaction, TransactionEnvelope,
             TransactionExt, TransactionV1Envelope, Uint256,
         },
         xdr_codec::XdrCodec,
     };
 
-    use crate::{
-        keypair::{Keypair, PublicKey},
-        network::TEST_NETWORK,
-        transaction::sign,
-    };
+    use crate::{keypair::SecretKey, network::TEST_NETWORK};
 
     fn binary_public(public: &str) -> Uint256 {
-        PublicKey::from_encoding(public)
-            .unwrap()
-            .get_binary()
-            .clone()
+        PublicKey::from_encoding(public).unwrap().into_binary()
     }
 
     #[test]
@@ -273,13 +298,13 @@ mod tests {
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
                         selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"USDT".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
                             )),
                         }),
                         buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"LTC\0".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
                             )),
                         }),
@@ -296,13 +321,13 @@ mod tests {
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
                         selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"USDT".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
                             )),
                         }),
                         buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"LTC\0".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
                             )),
                         }),
@@ -319,13 +344,13 @@ mod tests {
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
                         selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"USDT".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
                             )),
                         }),
                         buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"LTC\0".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
                             )),
                         }),
@@ -342,13 +367,13 @@ mod tests {
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
                         selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"USDT".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
                             )),
                         }),
                         buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"LTC\0".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
                             )),
                         }),
@@ -365,13 +390,13 @@ mod tests {
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
                         selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"USDT".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
                             )),
                         }),
                         buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"LTC\0".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
                             )),
                         }),
@@ -388,13 +413,13 @@ mod tests {
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
                         selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"LTC\0".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
                             )),
                         }),
                         buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"USDT".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
                             )),
                         }),
@@ -408,13 +433,13 @@ mod tests {
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
                         selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"LTC\0".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
                             )),
                         }),
                         buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"USDT".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
                             )),
                         }),
@@ -428,13 +453,13 @@ mod tests {
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
                         selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"LTC\0".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
                             )),
                         }),
                         buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"USDT".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
                             )),
                         }),
@@ -448,13 +473,13 @@ mod tests {
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
                         selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"LTC\0".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
                             )),
                         }),
                         buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"USDT".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
                             )),
                         }),
@@ -468,13 +493,13 @@ mod tests {
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
                         selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"LTC\0".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
                             )),
                         }),
                         buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"USDT".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
                             )),
                         }),
@@ -488,13 +513,13 @@ mod tests {
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
                         selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"LTC\0".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
                             )),
                         }),
                         buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"USDT".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
                             )),
                         }),
@@ -508,13 +533,13 @@ mod tests {
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
                         selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"LTC\0".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
                             )),
                         }),
                         buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"USDT".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
                             )),
                         }),
@@ -528,13 +553,13 @@ mod tests {
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
                         selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"LTC\0".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
                             )),
                         }),
                         buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"USDT".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
                             )),
                         }),
@@ -548,13 +573,13 @@ mod tests {
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
                         selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"LTC\0".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
                             )),
                         }),
                         buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"USDT".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
                             )),
                         }),
@@ -568,13 +593,13 @@ mod tests {
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
                         selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"LTC\0".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
                             )),
                         }),
                         buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                             asset_code: b"USDT".clone(),
-                            issuer: xdr::PublicKey::PublicKeyTypeEd25519(binary_public(
+                            issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
                             )),
                         }),
@@ -594,7 +619,7 @@ mod tests {
     #[test]
     fn sign_simple_transaction() {
         let secret = "SCDSVACTNFNSD5LQZ5LWUWEY3UIAML2J7ALPFCD6ZX4D3TVJV7X243N3";
-        let keypair = Keypair::from_encoded_secret(secret);
+        let keypair = SecretKey::from_encoding(secret);
         assert!(keypair.is_ok());
         let keypair = keypair.unwrap();
 
@@ -605,7 +630,7 @@ mod tests {
         let mut transaction_envelope = TransactionEnvelope::EnvelopeTypeTx(TransactionV1Envelope {
             tx: Transaction {
                 source_account: MuxedAccount::KeyTypeEd25519(
-                    keypair.get_public().get_binary().clone(),
+                    keypair.get_public().clone().into_binary(),
                 ),
                 fee: 10000,
                 seq_num: 59481002082305,
@@ -617,7 +642,7 @@ mod tests {
                 operations: LimitedVarArray::new(vec![Operation {
                     source_account: None,
                     body: OperationBody::Payment(PaymentOp {
-                        destination: MuxedAccount::KeyTypeEd25519(dest_public.get_binary().clone()),
+                        destination: MuxedAccount::KeyTypeEd25519(dest_public.into_binary()),
                         asset: Asset::AssetTypeNative,
                         amount: 10_000_000,
                     }),

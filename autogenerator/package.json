@@ -1,0 +1,34 @@
+{
+  "name": "rust-stellar-xdrgen",
+  "version": "0.6.0",
+  "description": "Generator for Rust Decoder/Encoder of XDR types used in Stellar",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "scripts": {
+    "download-x": "cd x2JavaScript && ./generate && cd ..",
+    "generate": "npm run generate-all-types && npm run format",
+    "generate-all-types": "DESTINATION=../src/stellar MAIN_FILE_NAME=types.rs npx ts-node x2JavaScript/generated/stellar-xdr_generated.ts",
+    "format": "cargo fmt -- ../src/stellar/types.rs",
+    "build": "npm run download-x && npm run generate",
+    "test": "cd test && cargo test"
+  },
+  "author": "SatoshiPay Ltd",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/node": "^15.12.2",
+    "js-xdr": "file:./js-xdr",
+    "ts-node": "^10.0.0",
+    "typescript": "^4.3.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/satoshipay/ts-stellar-xdr.git"
+  },
+  "prettier": {
+    "printWidth": 120,
+    "tabWidth": 2
+  },
+  "dependencies": {
+    "change-case": "^4.1.2"
+  }
+}

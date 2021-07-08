@@ -8,10 +8,10 @@ description = "A Substrate compatible SDK for Stellar"
 repository = "https://github.com/pendulum-chain/substrate-stellar-sdk"
 readme = "README.md"
 keywords = ["substrate", "Stellar"]
+exclude = ["autogenerator/*"]
 
 [dependencies]
 sp-std = { default-features = false, version = "3.0.0" }
-substrate-stellar-xdr = { version = "0.2.6" }
 sodalite = { version = "0.4.0" }
 sha2 = { default-features = false, version = "0.9.5" }
 lazy_static = { version = "1.4.0", features = ["spin_no_std"] }
@@ -23,6 +23,7 @@ serde = { version = "1.0.100", default-features = false, features = ["derive", "
 
 [features]
 default = [ "offchain", "std" ]
+all-types = []
 offchain = [ "sp-runtime", "sp-io", "serde_json", "serde" ]
 std = [
   "sp-runtime/std",

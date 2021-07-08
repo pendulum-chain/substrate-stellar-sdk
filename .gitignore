@@ -1,1 +1,12 @@
 /target
+
+
+/autogenerator/target
+/autogenerator/node_modules
+/autogenerator/js-xdr/node_modules
+/autogenerator/x2JavaScript/generated
+/autogenerator/js-xdr/src/test
+/autogenerator/generated
+/autogenerator/lib
+/autogenerator/static/target
+/autogenerator/test/target

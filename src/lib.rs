@@ -12,12 +12,14 @@ pub use std::string::String;
 
 pub mod keypair;
 pub mod network;
-pub mod transaction;
+pub mod stellar;
 mod utils;
+
+pub const BASE_FEE_STROOPS: u32 = 100;
 
 #[cfg(offchain)]
 pub mod horizon;
 #[cfg(offchain)]
 pub mod horizon_types;
 
-pub use substrate_stellar_xdr::{xdr, xdr_codec::XdrCodec};
+pub use stellar::{types, xdr_codec::XdrCodec};
