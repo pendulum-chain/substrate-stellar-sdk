@@ -3,7 +3,9 @@
 use core::convert::{AsRef, TryInto};
 use sp_std::vec::Vec;
 
-use super::base32::{decode, encode, Base32ParseError};
+use super::base32::{decode, encode};
+
+use crate::Error;
 
 pub const ED25519_PUBLIC_KEY_BYTE_LENGTH: usize = 32;
 pub const ED25519_PUBLIC_KEY_VERSION_BYTE: u8 = 6 << 3; // G
@@ -15,22 +17,22 @@ pub const ED25519_SECRET_SEED_VERSION_BYTE: u8 = 18 << 3; // S
 pub fn decode_stellar_key<T: AsRef<[u8]>, const BYTE_LENGTH: usize>(
     encoded_key: T,
     version_byte: u8,
-) -> Result<[u8; BYTE_LENGTH], KeyDecodeError> {
+) -> Result<[u8; BYTE_LENGTH], Error> {
     let decoded_array = decode(encoded_key.as_ref())?;
     if *encoded_key.as_ref() != encode(&decoded_array)[..] {
-        return Err(KeyDecodeError::InvalidEncoding);
+        return Err(Error::InvalidStellarKeyEncoding);
     }
 
     let array_length = decoded_array.len();
     if array_length != 3 + BYTE_LENGTH {
-        return Err(KeyDecodeError::InvalidEncodingLength);
+        return Err(Error::InvalidStellarKeyEncodingLength);
     }
 
     let crc_value =
         ((decoded_array[array_length - 1] as u16) << 8) | decoded_array[array_length - 2] as u16;
     let expected_crc_value = crc(&decoded_array[..array_length - 2]);
     if crc_value != expected_crc_value {
-        return Err(KeyDecodeError::InvalidChecksum {
+        return Err(Error::InvalidStellarKeyChecksum {
             expected: expected_crc_value,
             found: crc_value,
         });
@@ -38,7 +40,7 @@ pub fn decode_stellar_key<T: AsRef<[u8]>, const BYTE_LENGTH: usize>(
 
     let expected_version = version_byte;
     if decoded_array[0] != expected_version {
-        return Err(KeyDecodeError::InvalidEncodingVersion {
+        return Err(Error::InvalidStellarKeyEncodingVersion {
             expected_version: expected_version as char,
             found_version: decoded_array[0] as char,
         });
@@ -80,32 +82,4 @@ fn crc<T: AsRef<[u8]>>(byte_array: T) -> u16 {
     }
 
     crc
-}
-
-/// Error type for key decoding errors
-#[derive(Debug)]
-pub enum KeyDecodeError {
-    /// The encoding can be decoded but is not the canonical encoding of the underlying binary key
-    InvalidEncoding,
-
-    /// The encoding has an invalid length
-    InvalidEncodingLength,
-
-    /// The initial version byte is invalid for this `EncodableKey`
-    InvalidEncodingVersion {
-        expected_version: char,
-        found_version: char,
-    },
-
-    /// The checksum in the encoding is invaliid
-    InvalidChecksum { expected: u16, found: u16 },
-
-    /// The base32 encoding is invalid
-    InvalidBase32(Base32ParseError),
-}
-
-impl From<Base32ParseError> for KeyDecodeError {
-    fn from(error: Base32ParseError) -> Self {
-        KeyDecodeError::InvalidBase32(error)
-    }
 }

@@ -1,233 +1,260 @@
 //! Transaction envelopes and signatures
 
-use super::{
-    compound_types::{LimitedVarArray, LimitedVarOpaque},
-    types::{
-        DecoratedSignature, Memo, MuxedAccount, PublicKey, TimeBounds, Transaction,
-        TransactionEnvelope, TransactionExt, TransactionV1Envelope,
-    },
-    xdr_codec::XdrCodec,
-};
 use core::convert::TryInto;
 use sodalite::SIGN_LEN;
 use sp_std::{prelude::*, vec::Vec};
 
 use crate::{
     keypair::SecretKey,
-    stellar::types::{
-        TransactionSignaturePayload, TransactionSignaturePayloadTaggedTransaction, TransactionV0Ext,
+    network::Network,
+    types::{
+        AccountId, DecoratedSignature, Memo, MuxedAccount, Operation, PublicKey, TimeBounds,
+        Transaction, TransactionEnvelope, TransactionExt, TransactionSignaturePayload,
+        TransactionSignaturePayloadTaggedTransaction, TransactionV0Ext, TransactionV1Envelope,
     },
-};
-use crate::{network::Network, utils::key_encoding::KeyDecodeError};
-use crate::{
-    utils::{base64, sha256::sha256, sha256::BinarySha256Hash},
-    BASE_FEE_STROOPS,
-};
-
-pub fn create_transaction_envelope(
-    source_account: &str,
-    sequence_number: i64,
-    fee: Option<u32>,
-    time_bounds: Option<TimeBounds>,
-    memo: Option<Memo>,
-) -> Result<TransactionEnvelope, KeyDecodeError> {
-    let source_public_key = PublicKey::from_encoding(source_account)?;
-
-    let transaction = Transaction {
-        source_account: MuxedAccount::KeyTypeEd25519(source_public_key.into_binary()),
-        fee: fee.unwrap_or(BASE_FEE_STROOPS),
-        seq_num: sequence_number,
-        time_bounds,
-        memo: memo.unwrap_or(Memo::MemoNone),
-        operations: LimitedVarArray::new_empty(),
-        ext: TransactionExt::V0,
-    };
-
-    Ok(TransactionEnvelope::EnvelopeTypeTx(TransactionV1Envelope {
-        tx: transaction,
-        signatures: LimitedVarArray::new_empty(),
-    }))
-}
-
-/// An error type for signing transactions
-pub enum SignatureError {
-    /// The signature has an invalid length
-    InvalidLength {
-        found_length: usize,
-        expected_length: usize,
+    utils::{
+        base64,
+        sha256::{sha256, BinarySha256Hash},
     },
-    /// Verification for this public key failed
-    PublicKeyCantVerify,
+    xdr::{
+        compound_types::{LimitedVarArray, LimitedVarOpaque},
+        xdr_codec::XdrCodec,
+    },
+    Error, BASE_FEE_STROOPS,
+};
 
-    /// The base64 encoding of the signature is invalid
-    InvalidBase64Encoding,
+impl Transaction {
+    pub fn new(
+        source_account: &str,
+        sequence_number: i64,
+        fee: Option<u32>,
+        time_bounds: Option<TimeBounds>,
+        memo: Option<Memo>,
+    ) -> Result<Self, Error> {
+        let source_public_key = AccountId::from_encoding(source_account)?;
 
-    /// The transaction envelope already has the maximal number of signatures (20)
-    TooManySignatures,
-}
+        let transaction = Transaction {
+            source_account: MuxedAccount::KeyTypeEd25519(source_public_key.into_binary()),
+            fee: fee.unwrap_or(BASE_FEE_STROOPS),
+            seq_num: sequence_number,
+            time_bounds,
+            memo: memo.unwrap_or(Memo::MemoNone),
+            operations: LimitedVarArray::new_empty(),
+            ext: TransactionExt::V0,
+        };
 
-fn get_signatures(
-    transaction_envelope: &mut TransactionEnvelope,
-) -> &mut LimitedVarArray<DecoratedSignature, 20> {
-    match transaction_envelope {
-        TransactionEnvelope::EnvelopeTypeTxV0(envelope) => &mut envelope.signatures,
-        TransactionEnvelope::EnvelopeTypeTx(envelope) => &mut envelope.signatures,
-        TransactionEnvelope::EnvelopeTypeTxFeeBump(envelope) => &mut envelope.signatures,
-        _ => unreachable!("Invalid transaction envelope type"),
+        Ok(transaction)
+    }
+
+    pub fn append_operation(&mut self, operation: Operation) -> Result<(), Error> {
+        self.operations.push(operation)
+    }
+
+    pub fn into_transaction_envelope(self) -> TransactionEnvelope {
+        TransactionEnvelope::EnvelopeTypeTx(TransactionV1Envelope {
+            tx: self,
+            signatures: LimitedVarArray::new_empty(),
+        })
     }
 }
 
-/// Generate a base64 encoded signature
-///
-/// Generate a signature for the `transaction_envelope`. Generate the signature
-/// for a network having the passphrase contained in `network`. The secret key for
-/// signing the envelope is provided by `keypair`.
-/// The signature is not appended to the transaction envelope.
-pub fn create_base64_signature(
-    transaction_envelope: &TransactionEnvelope,
-    network: &Network,
-    keypair: &SecretKey,
-) -> Vec<u8> {
-    let transaction_hash = get_hash(transaction_envelope, network);
-    let signature = keypair.create_signature(transaction_hash);
-    base64::encode(signature)
-}
+impl TransactionEnvelope {
+    fn get_signatures(&mut self) -> &mut LimitedVarArray<DecoratedSignature, 20> {
+        match self {
+            TransactionEnvelope::EnvelopeTypeTxV0(envelope) => &mut envelope.signatures,
+            TransactionEnvelope::EnvelopeTypeTx(envelope) => &mut envelope.signatures,
+            TransactionEnvelope::EnvelopeTypeTxFeeBump(envelope) => &mut envelope.signatures,
+            _ => unreachable!("Invalid transaction envelope type"),
+        }
+    }
 
-/// Generate and add signatures to a transaction envelope
-///
-/// Generate and add signatures to the `transaction_envelope`. The signature
-/// is generated for a network having the passphrase contained in `network`. Generate and add
-/// one signature for each keypair in `keypairs`.
-
-pub fn sign(
-    transaction_envelope: &mut TransactionEnvelope,
-    network: &Network,
-    keypairs: Vec<&SecretKey>,
-) -> Result<(), SignatureError> {
-    let transaction_hash = get_hash(transaction_envelope, network);
-
-    let signatures = get_signatures(transaction_envelope);
-
-    for keypair in keypairs.iter() {
+    /// Generate a base64 encoded signature
+    ///
+    /// Generate a signature for the `transaction_envelope`. Generate the signature
+    /// for a network having the passphrase contained in `network`. The secret key for
+    /// signing the envelope is provided by `keypair`.
+    /// The signature is not appended to the transaction envelope.
+    pub fn create_base64_signature(&self, network: &Network, keypair: &SecretKey) -> Vec<u8> {
+        let transaction_hash = self.get_hash(network);
         let signature = keypair.create_signature(transaction_hash);
-        let hint = keypair.get_public().get_signature_hint();
+        base64::encode(signature)
+    }
+
+    /// Generate and add signatures to a transaction envelope
+    ///
+    /// Generate and add signatures to the `transaction_envelope`. The signature
+    /// is generated for a network having the passphrase contained in `network`. Generate and add
+    /// one signature for each keypair in `keypairs`.
+    pub fn sign(&mut self, network: &Network, keypairs: Vec<&SecretKey>) -> Result<(), Error> {
+        let transaction_hash = self.get_hash(network);
+
+        let signatures = self.get_signatures();
+
+        for keypair in keypairs.iter() {
+            let signature = keypair.create_signature(transaction_hash);
+            let hint = keypair.get_public().get_signature_hint();
+
+            signatures
+                .push(DecoratedSignature {
+                    hint,
+                    signature: LimitedVarOpaque::new(Vec::from(signature)).unwrap(),
+                })
+                .map_err(|_| Error::TooManySignatures)?;
+        }
+
+        Ok(())
+    }
+
+    /// Add a base64 encoded signature to a transaction envelope
+    ///
+    /// Add a previously generated base64 encoded signature to the `transaction_envelope`.
+    /// This function verifies whether the signature is valid given the passphrase contained in `network`
+    /// and the `public_key`.
+    pub fn add_base64_signature<T: AsRef<[u8]>>(
+        &mut self,
+        network: &Network,
+        base64_signature: T,
+        public_key: &PublicKey,
+    ) -> Result<(), Error> {
+        let signature = match base64::decode(base64_signature) {
+            Err(err) => Err(Error::InvalidBase64Encoding(err))?,
+            Ok(signature) => {
+                if signature.len() != SIGN_LEN {
+                    return Err(Error::InvalidSignatureLength {
+                        found_length: signature.len(),
+                        expected_length: SIGN_LEN,
+                    });
+                };
+                signature
+            }
+        };
+
+        let transaction_hash = self.get_hash(network);
+        if !public_key.verify_signature(transaction_hash, signature[..].try_into().unwrap()) {
+            return Err(Error::PublicKeyCantVerify);
+        }
+
+        let signatures = self.get_signatures();
 
         signatures
             .push(DecoratedSignature {
-                hint,
-                signature: LimitedVarOpaque::new(Vec::from(signature)).unwrap(),
+                hint: public_key.get_signature_hint(),
+                signature: LimitedVarOpaque::new(signature).unwrap(),
             })
-            .map_err(|_| SignatureError::TooManySignatures)?;
+            .map_err(|_| Error::TooManySignatures)?;
+
+        Ok(())
     }
 
-    Ok(())
-}
+    fn get_hash(&self, network: &Network) -> BinarySha256Hash {
+        let network_id = network.get_id().clone();
 
-/// Add a base64 encoded signature to a transaction envelope
-///
-/// Add a previously generated base64 encoded signature to the `transaction_envelope`.
-/// This function verifies whether the signature is valid given the passphrase contained in `network`
-/// and the `public_key`.
-pub fn add_base64_signature<T: AsRef<[u8]>>(
-    transaction_envelope: &mut TransactionEnvelope,
-    network: &Network,
-    base64_signature: T,
-    public_key: &PublicKey,
-) -> Result<(), SignatureError> {
-    let signature = match base64::decode(base64_signature) {
-        Err(_) => Err(SignatureError::InvalidBase64Encoding)?,
-        Ok(signature) => {
-            if signature.len() != SIGN_LEN {
-                return Err(SignatureError::InvalidLength {
-                    found_length: signature.len(),
-                    expected_length: SIGN_LEN,
-                });
-            };
-            signature
-        }
-    };
+        let tagged_transaction = match self {
+            TransactionEnvelope::EnvelopeTypeTxV0(envelope) => {
+                let transaction = Transaction {
+                    source_account: MuxedAccount::KeyTypeEd25519(
+                        envelope.tx.source_account_ed25519,
+                    ),
+                    fee: envelope.tx.fee,
+                    seq_num: envelope.tx.seq_num,
+                    time_bounds: envelope.tx.time_bounds.clone(),
+                    memo: envelope.tx.memo.clone(),
+                    operations: envelope.tx.operations.clone(),
+                    ext: match envelope.tx.ext {
+                        TransactionV0Ext::V0 => TransactionExt::V0,
+                        TransactionV0Ext::Default(default) => TransactionExt::Default(default),
+                    },
+                };
+                TransactionSignaturePayloadTaggedTransaction::EnvelopeTypeTx(transaction)
+            }
 
-    let transaction_hash = get_hash(transaction_envelope, network);
-    if !public_key.verify_signature(transaction_hash, signature[..].try_into().unwrap()) {
-        return Err(SignatureError::PublicKeyCantVerify);
+            TransactionEnvelope::EnvelopeTypeTx(envelope) => {
+                TransactionSignaturePayloadTaggedTransaction::EnvelopeTypeTx(envelope.tx.clone())
+            }
+
+            TransactionEnvelope::EnvelopeTypeTxFeeBump(envelope) => {
+                TransactionSignaturePayloadTaggedTransaction::EnvelopeTypeTxFeeBump(
+                    envelope.tx.clone(),
+                )
+            }
+
+            _ => unimplemented!("This type of transaction envelope is not supported"),
+        };
+
+        let signature_payload = TransactionSignaturePayload {
+            network_id,
+            tagged_transaction,
+        };
+
+        sha256(signature_payload.to_xdr())
     }
-
-    let signatures = get_signatures(transaction_envelope);
-
-    signatures
-        .push(DecoratedSignature {
-            hint: public_key.get_signature_hint(),
-            signature: LimitedVarOpaque::new(signature).unwrap(),
-        })
-        .map_err(|_| SignatureError::TooManySignatures)?;
-
-    Ok(())
-}
-
-fn get_hash(transaction_envelope: &TransactionEnvelope, network: &Network) -> BinarySha256Hash {
-    let network_id = network.get_id().clone();
-
-    let tagged_transaction = match transaction_envelope {
-        TransactionEnvelope::EnvelopeTypeTxV0(transaction_envelope) => {
-            let transaction = Transaction {
-                source_account: MuxedAccount::KeyTypeEd25519(
-                    transaction_envelope.tx.source_account_ed25519,
-                ),
-                fee: transaction_envelope.tx.fee,
-                seq_num: transaction_envelope.tx.seq_num,
-                time_bounds: transaction_envelope.tx.time_bounds.clone(),
-                memo: transaction_envelope.tx.memo.clone(),
-                operations: transaction_envelope.tx.operations.clone(),
-                ext: match transaction_envelope.tx.ext {
-                    TransactionV0Ext::V0 => TransactionExt::V0,
-                    TransactionV0Ext::Default(default) => TransactionExt::Default(default),
-                },
-            };
-            TransactionSignaturePayloadTaggedTransaction::EnvelopeTypeTx(transaction)
-        }
-
-        TransactionEnvelope::EnvelopeTypeTx(transaction_envelope) => {
-            TransactionSignaturePayloadTaggedTransaction::EnvelopeTypeTx(
-                transaction_envelope.tx.clone(),
-            )
-        }
-
-        TransactionEnvelope::EnvelopeTypeTxFeeBump(transaction_envelope) => {
-            TransactionSignaturePayloadTaggedTransaction::EnvelopeTypeTxFeeBump(
-                transaction_envelope.tx.clone(),
-            )
-        }
-
-        _ => unimplemented!("This type of transaction envelope is not supported"),
-    };
-
-    let signature_payload = TransactionSignaturePayload {
-        network_id,
-        tagged_transaction,
-    };
-
-    sha256(signature_payload.to_xdr())
 }
 
 #[cfg(test)]
 mod tests {
     use sp_std::{prelude::*, vec::Vec};
 
-    use crate::stellar::{
-        compound_types::LimitedVarArray,
-        transaction::sign,
+    use crate::{
         types::{
             Asset, AssetAlphaNum4, ManageSellOfferOp, Memo, MuxedAccount, Operation, OperationBody,
             PaymentOp, Price, PublicKey, TimeBounds, Transaction, TransactionEnvelope,
-            TransactionExt, TransactionV1Envelope, Uint256,
+            TransactionExt, TransactionMeta, TransactionV1Envelope, Uint256,
         },
-        xdr_codec::XdrCodec,
+        xdr::compound_types::LimitedVarArray,
+        XdrCodec,
     };
 
     use crate::{keypair::SecretKey, network::TEST_NETWORK};
 
+    const ENVELOPE: &[u8; 408] = b"AAAAAgAAAAC9xFYU1gQJeH4apEfzJkMCsW5DL4GEWRpyVjQHOlWVzgAAAZA\
+        CGsQoAAQytgAAAAAAAAAAAAAAAgAAAAAAAAADAAAAAVhMUEcAAAAAxxJMrxQQOx9raxDm3\
+        lINsLvksi7tj1BCQXzWTtqigbgAAAAAAAAAAAbK5N8CprKDAExLQAAAAAAAAAAAAAAAAAA\
+        AAAMAAAAAAAAAAVhMUEcAAAAAxxJMrxQQOx9raxDm3lINsLvksi7tj1BCQXzWTtqigbgAA\
+        AAAlV2+xQAEaBMAJiWgAAAAAAAAAAAAAAAAAAAAATpVlc4AAABAaX11e1dGcDkXrFT5s3Q\
+        N6x3v4kQqJ/1VIjqO00y6OStd70/aYiXR35e4289RvmBTudJ5Q05PaRsD8p1qa17VDQ==";
+
+    const META: &[u8; 2060] = b"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\
+        AAAAAAAAAA=";
+
     fn binary_public(public: &str) -> Uint256 {
         PublicKey::from_encoding(public).unwrap().into_binary()
+    }
+
+    #[test]
+    fn xdr_encode_decode_transaction_envelope() {
+        let envelope = TransactionEnvelope::from_base64_xdr(ENVELOPE).unwrap();
+        assert_eq!(ENVELOPE, &envelope.to_base64_xdr()[..]);
+
+        let meta = TransactionMeta::from_base64_xdr(META).unwrap();
+        assert_eq!(META, &meta.to_base64_xdr()[..]);
     }
 
     #[test]
@@ -662,7 +689,7 @@ mod tests {
             &expected_xdr[..]
         );
 
-        let signing_result = sign(&mut transaction_envelope, &TEST_NETWORK, vec![&keypair]);
+        let signing_result = transaction_envelope.sign(&TEST_NETWORK, vec![&keypair]);
         assert!(signing_result.is_ok());
 
         let expected_signed_xdr = b"AAAAAgAAAABRVWJF9F/Kd+p+e65\

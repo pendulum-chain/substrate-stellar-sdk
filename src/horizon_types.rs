@@ -1,4 +1,4 @@
-//! Type definition of horiz balance: (), limit: (), buying_liabilities: (), selling_liabilities: (), sponsor: (), last_modified_ledger: (), is_a, sponsor: (), last_modified_ledger: (), is_authorized: (), is_authorized_to_maintain_liabilities: (), is_clawback_enabled: (), asset_code: (), asset_issuer: () uthorized: (), is_authorized_to_maintain_liabilities: (), is_clawback_enabled: (), asset_type: (), asset_code: (), asset_issuer: ()  balance: (), limit: (), buying_liabilities: (), selling_liabilities: (), sponsor: (), last_modified_ledger: (), is_authorized: (), is_authorized_to_maintain_liabilities: (), is_clawback_enabled: (), asset_type: (), asset_code: (), asset_issuer: () on API responses
+//! Type definition of horizon API responses
 //!
 //! Taken from [The horizon protocol specification](https://github.com/stellar/go/blob/master/protocols/horizon/main.go)
 
@@ -6,7 +6,7 @@ use serde::Deserialize;
 use serde_json::Value;
 use sp_std::vec::Vec;
 
-use crate::String;
+use crate::lib::String;
 
 /// The type of a Hypertext Application Language (HAL) link
 #[derive(Deserialize, Debug, PartialEq, Eq)]

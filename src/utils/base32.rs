@@ -1,6 +1,8 @@
 use core::convert::AsRef;
 use sp_std::vec::Vec;
 
+use crate::Error;
+
 const ALPHABET: &'static [u8; 32] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
 fn ascii_to_value_5bit(char: u8) -> Option<u8> {
@@ -45,12 +47,7 @@ pub fn encode<T: AsRef<[u8]>>(binary: T) -> Vec<u8> {
     buffer
 }
 
-#[derive(Debug)]
-pub enum Base32ParseError {
-    InvalidCharacter { at_position: usize },
-}
-
-pub fn decode<T: AsRef<[u8]>>(string: T) -> Result<Vec<u8>, Base32ParseError> {
+pub fn decode<T: AsRef<[u8]>>(string: T) -> Result<Vec<u8>, Error> {
     let mut result = Vec::with_capacity(string.as_ref().len());
     let mut shift: i8 = 8;
     let mut carry: u8 = 0;
@@ -75,7 +72,7 @@ pub fn decode<T: AsRef<[u8]>>(string: T) -> Result<Vec<u8>, Base32ParseError> {
                 carry = 0;
             }
         } else {
-            return Err(Base32ParseError::InvalidCharacter {
+            return Err(Error::InvalidBase32Character {
                 at_position: position,
             });
         }

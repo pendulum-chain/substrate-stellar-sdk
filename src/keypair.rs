@@ -3,6 +3,8 @@
 use core::convert::{AsRef, TryInto};
 use sp_std::{prelude::*, vec, vec::Vec};
 
+use crate::Error;
+
 use sodalite::{
     sign_attached, sign_attached_open, sign_keypair_seed, SignPublicKey, SignSecretKey, SIGN_LEN,
     SIGN_PUBLIC_KEY_LEN, SIGN_SECRET_KEY_LEN,
@@ -18,8 +20,23 @@ use crate::{
     XdrCodec,
 };
 
-use super::utils::key_encoding::KeyDecodeError;
 pub use sodalite::Sign as Signature;
+
+pub trait AsPublicKey {
+    fn as_public_key(&self) -> Result<PublicKey, Error>;
+}
+
+impl AsPublicKey for PublicKey {
+    fn as_public_key(&self) -> Result<PublicKey, Error> {
+        Ok(self.clone())
+    }
+}
+
+impl<T: AsRef<[u8]>> AsPublicKey for T {
+    fn as_public_key(&self) -> Result<PublicKey, Error> {
+        Ok(PublicKey::from_encoding(self)?)
+    }
+}
 
 /// The public key of an Ed25519 signing key pair
 ///
@@ -48,7 +65,7 @@ impl PublicKey {
         *self.as_binary()
     }
 
-    pub fn from_encoding<T: AsRef<[u8]>>(encoded_key: T) -> Result<Self, KeyDecodeError> {
+    pub fn from_encoding<T: AsRef<[u8]>>(encoded_key: T) -> Result<Self, Error> {
         let decoded_key = decode_stellar_key(encoded_key, ED25519_PUBLIC_KEY_VERSION_BYTE)?;
         Ok(Self::from_binary(decoded_key))
     }
@@ -134,7 +151,7 @@ impl SecretKey {
         *self.as_binary()
     }
 
-    pub fn from_encoding<T: AsRef<[u8]>>(encoded_key: T) -> Result<Self, KeyDecodeError> {
+    pub fn from_encoding<T: AsRef<[u8]>>(encoded_key: T) -> Result<Self, Error> {
         let decoded_key = decode_stellar_key(encoded_key, ED25519_SECRET_SEED_VERSION_BYTE)?;
         Ok(Self::from_binary(decoded_key))
     }

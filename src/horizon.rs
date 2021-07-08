@@ -2,7 +2,7 @@ use sp_io::offchain::timestamp;
 use sp_runtime::offchain::{http::Error, http::Request, Duration, HttpError};
 use sp_std::{prelude::*, str, vec::Vec};
 
-use crate::{horizon_types::AccountResponse, keypair::PublicKey};
+use crate::{horizon_types::AccountResponse, types::AccountId};
 
 pub struct Horizon {
     base_url: Vec<u8>,
@@ -57,7 +57,7 @@ impl Horizon {
     /// The sequence number is defined to be of type [i64](https://github.com/stellar/stellar-core/blob/master/src/xdr/Stellar-ledger-entries.x)
     pub fn fetch_sequence_number(
         &self,
-        account_id: &PublicKey,
+        account_id: &AccountId,
         timeout_milliseconds: u64,
     ) -> Result<i64, FetchError> {
         let mut url = self.base_url.clone();

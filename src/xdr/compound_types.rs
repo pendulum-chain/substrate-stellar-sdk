@@ -5,13 +5,7 @@ use sp_std::{prelude::*, vec::Vec};
 
 use super::streams::{DecodeError, ReadStream, WriteStream};
 use super::xdr_codec::XdrCodec;
-
-/// Error to indicate that the length of a limited var array or string is violated
-#[derive(Debug, Clone)]
-pub struct ExceedsMaximumLengthError {
-    pub requested_length: usize,
-    pub allowed_length: i32,
-}
+use crate::Error;
 
 /// Type for binary data whose length is not predefined but bounded by a constant
 ///
@@ -26,9 +20,9 @@ impl<const N: i32> LimitedVarOpaque<N> {
     ///
     /// The length of the byte vector must not exceed `N`. Otherwise this function returns
     /// an error.
-    pub fn new(vec: Vec<u8>) -> Result<Self, ExceedsMaximumLengthError> {
+    pub fn new(vec: Vec<u8>) -> Result<Self, Error> {
         match vec.len() > N as usize {
-            true => Err(ExceedsMaximumLengthError {
+            true => Err(Error::ExceedsMaximumLength {
                 requested_length: vec.len(),
                 allowed_length: N,
             }),
@@ -92,9 +86,9 @@ impl<const N: i32> LimitedString<N> {
     /// The byte vector represents an ASCII string.
     /// The length of the byte vector must not exceed `N`. Otherwise this function returns
     /// an error
-    pub fn new(vec: Vec<u8>) -> Result<Self, ExceedsMaximumLengthError> {
+    pub fn new(vec: Vec<u8>) -> Result<Self, Error> {
         match vec.len() > N as usize {
-            true => Err(ExceedsMaximumLengthError {
+            true => Err(Error::ExceedsMaximumLength {
                 requested_length: vec.len(),
                 allowed_length: N,
             }),
@@ -154,9 +148,9 @@ impl<T, const N: i32> LimitedVarArray<T, N> {
     ///
     /// The length of the vector must not exceed `N`. Otherwise this function returns
     /// an error
-    pub fn new(vec: Vec<T>) -> Result<Self, ExceedsMaximumLengthError> {
+    pub fn new(vec: Vec<T>) -> Result<Self, Error> {
         match vec.len() > N as usize {
-            true => Err(ExceedsMaximumLengthError {
+            true => Err(Error::ExceedsMaximumLength {
                 requested_length: vec.len(),
                 allowed_length: N,
             }),
@@ -176,9 +170,9 @@ impl<T, const N: i32> LimitedVarArray<T, N> {
     /// Add an element to the byte vector
     ///
     /// Return an `Err` if the array already has the maximal number of elements.
-    pub fn push(&mut self, item: T) -> Result<(), ExceedsMaximumLengthError> {
+    pub fn push(&mut self, item: T) -> Result<(), Error> {
         if self.0.len() >= N as usize - 1 {
-            return Err(ExceedsMaximumLengthError {
+            return Err(Error::ExceedsMaximumLength {
                 requested_length: self.0.len() + 1,
                 allowed_length: N,
             });
