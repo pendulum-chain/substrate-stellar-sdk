@@ -1,9 +1,9 @@
 use core::convert::AsRef;
 
-use crate::{xdr::compound_types::LimitedString, Error, IntoHash, Memo};
+use crate::{xdr::compound_types::LimitedString, StellarSdkError, IntoHash, Memo};
 
 impl Memo {
-    pub fn from_text_memo<T: AsRef<[u8]>>(text: T) -> Result<Self, Error> {
+    pub fn from_text_memo<T: AsRef<[u8]>>(text: T) -> Result<Self, StellarSdkError> {
         let text = text.as_ref();
         let string = LimitedString::new(text.to_vec())?;
         Ok(Self::MemoText(string))
@@ -13,12 +13,12 @@ impl Memo {
         Self::MemoId(id)
     }
 
-    pub fn from_hash_memo<T: IntoHash>(hash: T) -> Result<Self, Error> {
+    pub fn from_hash_memo<T: IntoHash>(hash: T) -> Result<Self, StellarSdkError> {
         let hash = hash.into_hash()?;
         Ok(Self::MemoHash(hash))
     }
 
-    pub fn from_return_hash_memo<T: IntoHash>(return_hash: T) -> Result<Self, Error> {
+    pub fn from_return_hash_memo<T: IntoHash>(return_hash: T) -> Result<Self, StellarSdkError> {
         let return_hash = return_hash.into_hash()?;
         Ok(Self::MemoReturn(return_hash))
     }

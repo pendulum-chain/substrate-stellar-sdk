@@ -1,6 +1,6 @@
 use crate::{
     types::{OperationBody, SetTrustLineFlagsOp},
-    Asset, Error, IntoAccountId, IntoMuxedAccountId, Operation, TrustLineFlags,
+    Asset, IntoAccountId, IntoMuxedAccountId, Operation, StellarSdkError, TrustLineFlags,
 };
 
 impl Operation {
@@ -10,7 +10,7 @@ impl Operation {
         asset: Asset,
         clear_flags: Vec<TrustLineFlags>,
         set_flags: Vec<TrustLineFlags>,
-    ) -> Result<Operation, Error> {
+    ) -> Result<Operation, StellarSdkError> {
         let source_account = source_account.map(<_>::into_muxed_account_id).transpose()?;
 
         let clear_flags = clear_flags.iter().fold(0, |a, b| a | (*b as u32));

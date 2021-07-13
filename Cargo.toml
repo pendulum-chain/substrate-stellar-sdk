@@ -11,7 +11,7 @@ keywords = ["substrate", "Stellar"]
 exclude = ["autogenerator/*"]
 
 [dependencies]
-sp-std = { default-features = false, git = "https://github.com/paritytech/substrate" }
+sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", version = "3.0.0" }
 sodalite = { version = "0.4.0" }
 sha2 = { default-features = false, version = "0.9.5" }
 lazy_static = { version = "1.4.0", features = ["spin_no_std"] }

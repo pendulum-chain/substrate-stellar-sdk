@@ -1,8 +1,6 @@
 use core::convert::TryInto;
 
-use crate::Error;
-
-pub use AsBinary::{Binary, Hex};
+use crate::StellarSdkError;
 
 pub enum AsBinary<T: AsRef<[u8]>> {
     Binary(T),
@@ -10,25 +8,30 @@ pub enum AsBinary<T: AsRef<[u8]>> {
 }
 
 impl<T: AsRef<[u8]>> AsBinary<T> {
-    pub fn as_binary<const N: usize>(self) -> Result<[u8; N], Error> {
+    pub fn as_binary<const N: usize>(self) -> Result<[u8; N], StellarSdkError> {
         match self {
-            Binary(binary) => {
+            AsBinary::Binary(binary) => {
                 let binary = binary.as_ref();
 
-                binary.try_into().map_err(|_| Error::InvalidBinaryLength {
-                    found_length: binary.len(),
-                    expected_length: N,
-                })
+                binary
+                    .try_into()
+                    .map_err(|_| StellarSdkError::InvalidBinaryLength {
+                        found_length: binary.len(),
+                        expected_length: N,
+                    })
             }
 
-            Hex(hex) => {
-                let decoded = hex::decode(hex).map_err(|err| Error::InvalidHexEncoding(err))?;
+            AsBinary::Hex(hex) => {
+                let decoded =
+                    hex::decode(hex).map_err(|err| StellarSdkError::InvalidHexEncoding(err))?;
                 let decoded_length = decoded.len();
 
-                decoded.try_into().map_err(|_| Error::InvalidBinaryLength {
-                    found_length: decoded_length,
-                    expected_length: N,
-                })
+                decoded
+                    .try_into()
+                    .map_err(|_| StellarSdkError::InvalidBinaryLength {
+                        found_length: decoded_length,
+                        expected_length: N,
+                    })
             }
         }
     }

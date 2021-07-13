@@ -1,16 +1,16 @@
 use crate::{
     types::{CreatePassiveSellOfferOp, OperationBody},
-    AsAmount, Asset, Error, IntoMuxedAccountId, Operation, Price,
+    Asset, IntoAmount, IntoMuxedAccountId, Operation, Price, StellarSdkError,
 };
 
 impl Operation {
-    pub fn new_create_passive_sell_offser<T: IntoMuxedAccountId, S: AsAmount>(
+    pub fn new_create_passive_sell_offser<T: IntoMuxedAccountId, S: IntoAmount>(
         source_account: Option<T>,
         selling: Asset,
         buying: Asset,
         amount: S,
         price: Price,
-    ) -> Result<Operation, Error> {
+    ) -> Result<Operation, StellarSdkError> {
         let source_account = source_account.map(<_>::into_muxed_account_id).transpose()?;
 
         Ok(Operation {
@@ -18,7 +18,7 @@ impl Operation {
             body: OperationBody::CreatePassiveSellOffer(CreatePassiveSellOfferOp {
                 selling,
                 buying,
-                amount: amount.as_stroop_amount(false)?,
+                amount: amount.into_stroop_amount(false)?,
                 price,
             }),
         })

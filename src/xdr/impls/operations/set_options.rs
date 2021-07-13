@@ -3,7 +3,7 @@ use core::convert::AsRef;
 use crate::{
     compound_types::LimitedString,
     types::{OperationBody, SetOptionsOp},
-    Error, IntoAccountId, IntoMuxedAccountId, Operation, Signer,
+    StellarSdkError, IntoAccountId, IntoMuxedAccountId, Operation, Signer,
 };
 
 impl Operation {
@@ -18,7 +18,7 @@ impl Operation {
         high_threshold: Option<u8>,
         home_domain: Option<S>,
         signer: Option<Signer>,
-    ) -> Result<Operation, Error> {
+    ) -> Result<Operation, StellarSdkError> {
         let source_account = source_account.map(<_>::into_muxed_account_id).transpose()?;
 
         let home_domain = match home_domain {

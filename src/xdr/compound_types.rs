@@ -5,7 +5,7 @@ use sp_std::{prelude::*, vec::Vec};
 
 use super::streams::{DecodeError, ReadStream, WriteStream};
 use super::xdr_codec::XdrCodec;
-use crate::Error;
+use crate::StellarSdkError;
 
 /// Type for binary data whose length is not predefined but bounded by a constant
 ///
@@ -20,9 +20,9 @@ impl<const N: i32> LimitedVarOpaque<N> {
     ///
     /// The length of the byte vector must not exceed `N`. Otherwise this function returns
     /// an error.
-    pub fn new(vec: Vec<u8>) -> Result<Self, Error> {
+    pub fn new(vec: Vec<u8>) -> Result<Self, StellarSdkError> {
         match vec.len() > N as usize {
-            true => Err(Error::ExceedsMaximumLength {
+            true => Err(StellarSdkError::ExceedsMaximumLength {
                 requested_length: vec.len(),
                 allowed_length: N,
             }),
@@ -86,9 +86,9 @@ impl<const N: i32> LimitedString<N> {
     /// The byte vector represents an ASCII string.
     /// The length of the byte vector must not exceed `N`. Otherwise this function returns
     /// an error
-    pub fn new(vec: Vec<u8>) -> Result<Self, Error> {
+    pub fn new(vec: Vec<u8>) -> Result<Self, StellarSdkError> {
         match vec.len() > N as usize {
-            true => Err(Error::ExceedsMaximumLength {
+            true => Err(StellarSdkError::ExceedsMaximumLength {
                 requested_length: vec.len(),
                 allowed_length: N,
             }),
@@ -148,9 +148,9 @@ impl<T, const N: i32> LimitedVarArray<T, N> {
     ///
     /// The length of the vector must not exceed `N`. Otherwise this function returns
     /// an error
-    pub fn new(vec: Vec<T>) -> Result<Self, Error> {
+    pub fn new(vec: Vec<T>) -> Result<Self, StellarSdkError> {
         match vec.len() > N as usize {
-            true => Err(Error::ExceedsMaximumLength {
+            true => Err(StellarSdkError::ExceedsMaximumLength {
                 requested_length: vec.len(),
                 allowed_length: N,
             }),
@@ -170,9 +170,9 @@ impl<T, const N: i32> LimitedVarArray<T, N> {
     /// Add an element to the byte vector
     ///
     /// Return an `Err` if the array already has the maximal number of elements.
-    pub fn push(&mut self, item: T) -> Result<(), Error> {
+    pub fn push(&mut self, item: T) -> Result<(), StellarSdkError> {
         if self.0.len() >= N as usize - 1 {
-            return Err(Error::ExceedsMaximumLength {
+            return Err(StellarSdkError::ExceedsMaximumLength {
                 requested_length: self.0.len() + 1,
                 allowed_length: N,
             });

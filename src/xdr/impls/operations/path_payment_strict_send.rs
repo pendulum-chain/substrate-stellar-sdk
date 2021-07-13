@@ -3,14 +3,14 @@ use sp_std::vec::Vec;
 use crate::{
     compound_types::LimitedVarArray,
     types::{OperationBody, PathPaymentStrictSendOp},
-    AsAmount, Asset, Error, IntoMuxedAccountId, Operation,
+    Asset, IntoAmount, IntoMuxedAccountId, Operation, StellarSdkError,
 };
 
 impl Operation {
     pub fn new_path_payment_strict_send<
         T: IntoMuxedAccountId,
-        S: AsAmount,
-        U: AsAmount,
+        S: IntoAmount,
+        U: IntoAmount,
         V: IntoMuxedAccountId,
     >(
         source_account: Option<T>,
@@ -20,7 +20,7 @@ impl Operation {
         dest_asset: Asset,
         dest_min: U,
         path: Option<Vec<Asset>>,
-    ) -> Result<Operation, Error> {
+    ) -> Result<Operation, StellarSdkError> {
         let source_account = source_account.map(<_>::into_muxed_account_id).transpose()?;
 
         let path = match path {
@@ -32,10 +32,10 @@ impl Operation {
             source_account,
             body: OperationBody::PathPaymentStrictSend(PathPaymentStrictSendOp {
                 send_asset,
-                send_amount: send_amount.as_stroop_amount(false)?,
+                send_amount: send_amount.into_stroop_amount(false)?,
                 destination: destination.into_muxed_account_id()?,
                 dest_asset,
-                dest_min: dest_min.as_stroop_amount(false)?,
+                dest_min: dest_min.into_stroop_amount(false)?,
                 path,
             }),
         })

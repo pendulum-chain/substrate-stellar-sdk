@@ -3,7 +3,7 @@
 use core::convert::{AsRef, TryInto};
 use sp_std::{prelude::*, vec, vec::Vec};
 
-use crate::Error;
+use crate::StellarSdkError;
 
 use sodalite::{
     sign_attached, sign_keypair_seed, SignPublicKey, SignSecretKey, SIGN_LEN, SIGN_PUBLIC_KEY_LEN,
@@ -68,7 +68,7 @@ impl SecretKey {
         *self.as_binary()
     }
 
-    pub fn from_encoding<T: AsRef<[u8]>>(encoded_key: T) -> Result<Self, Error> {
+    pub fn from_encoding<T: AsRef<[u8]>>(encoded_key: T) -> Result<Self, StellarSdkError> {
         let decoded_key = decode_stellar_key(encoded_key, ED25519_SECRET_SEED_VERSION_BYTE)?;
         Ok(Self::from_binary(decoded_key))
     }

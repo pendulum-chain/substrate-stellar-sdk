@@ -20,7 +20,7 @@ use crate::{
         compound_types::{LimitedVarArray, LimitedVarOpaque},
         xdr_codec::XdrCodec,
     },
-    Error, BASE_FEE_STROOPS,
+    StellarSdkError, BASE_FEE_STROOPS,
 };
 
 impl Transaction {
@@ -30,7 +30,7 @@ impl Transaction {
         fee: Option<u32>,
         time_bounds: Option<TimeBounds>,
         memo: Option<Memo>,
-    ) -> Result<Self, Error> {
+    ) -> Result<Self, StellarSdkError> {
         let source_public_key = AccountId::from_encoding(source_account)?;
 
         let transaction = Transaction {
@@ -46,7 +46,7 @@ impl Transaction {
         Ok(transaction)
     }
 
-    pub fn append_operation(&mut self, operation: Operation) -> Result<(), Error> {
+    pub fn append_operation(&mut self, operation: Operation) -> Result<(), StellarSdkError> {
         self.operations.push(operation)
     }
 
@@ -85,7 +85,7 @@ impl TransactionEnvelope {
     /// Generate and add signatures to the `transaction_envelope`. The signature
     /// is generated for a network having the passphrase contained in `network`. Generate and add
     /// one signature for each keypair in `keypairs`.
-    pub fn sign(&mut self, network: &Network, keypairs: Vec<&SecretKey>) -> Result<(), Error> {
+    pub fn sign(&mut self, network: &Network, keypairs: Vec<&SecretKey>) -> Result<(), StellarSdkError> {
         let transaction_hash = self.get_hash(network);
 
         let signatures = self.get_signatures();
@@ -99,7 +99,7 @@ impl TransactionEnvelope {
                     hint,
                     signature: LimitedVarOpaque::new(Vec::from(signature)).unwrap(),
                 })
-                .map_err(|_| Error::TooManySignatures)?;
+                .map_err(|_| StellarSdkError::TooManySignatures)?;
         }
 
         Ok(())
@@ -115,12 +115,12 @@ impl TransactionEnvelope {
         network: &Network,
         base64_signature: T,
         public_key: &PublicKey,
-    ) -> Result<(), Error> {
+    ) -> Result<(), StellarSdkError> {
         let signature = match base64::decode(base64_signature) {
-            Err(err) => Err(Error::InvalidBase64Encoding(err))?,
+            Err(err) => Err(StellarSdkError::InvalidBase64Encoding(err))?,
             Ok(signature) => {
                 if signature.len() != SIGN_LEN {
-                    return Err(Error::InvalidSignatureLength {
+                    return Err(StellarSdkError::InvalidSignatureLength {
                         found_length: signature.len(),
                         expected_length: SIGN_LEN,
                     });
@@ -131,7 +131,7 @@ impl TransactionEnvelope {
 
         let transaction_hash = self.get_hash(network);
         if !public_key.verify_signature(transaction_hash, signature[..].try_into().unwrap()) {
-            return Err(Error::PublicKeyCantVerify);
+            return Err(StellarSdkError::PublicKeyCantVerify);
         }
 
         let signatures = self.get_signatures();
@@ -141,7 +141,7 @@ impl TransactionEnvelope {
                 hint: public_key.get_signature_hint(),
                 signature: LimitedVarOpaque::new(signature).unwrap(),
             })
-            .map_err(|_| Error::TooManySignatures)?;
+            .map_err(|_| StellarSdkError::TooManySignatures)?;
 
         Ok(())
     }

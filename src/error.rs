@@ -2,7 +2,7 @@ use base64::DecodeError;
 use hex::FromHexError;
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Error {
+pub enum StellarSdkError {
     InvalidBase32Character {
         at_position: usize,
     },

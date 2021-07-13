@@ -1,13 +1,13 @@
 use crate::{
     types::{OperationBody, RevokeSponsorshipOp, RevokeSponsorshipOpSigner},
-    Error, IntoMuxedAccountId, IntoPublicKey, LedgerKey, Operation, SignerKey,
+    StellarSdkError, IntoMuxedAccountId, IntoPublicKey, LedgerKey, Operation, SignerKey,
 };
 
 impl Operation {
     pub fn new_revoke_sponsorship_ledger_entry<T: IntoMuxedAccountId>(
         source_account: Option<T>,
         ledger_key: LedgerKey,
-    ) -> Result<Operation, Error> {
+    ) -> Result<Operation, StellarSdkError> {
         let source_account = match source_account {
             Some(source_account) => Some(source_account.into_muxed_account_id()?),
             None => None,
@@ -25,7 +25,7 @@ impl Operation {
         source_account: Option<S>,
         account_id: T,
         signer_key: SignerKey,
-    ) -> Result<Operation, Error> {
+    ) -> Result<Operation, StellarSdkError> {
         let source_account = source_account.map(<_>::into_muxed_account_id).transpose()?;
 
         Ok(Operation {

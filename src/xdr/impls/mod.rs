@@ -1,6 +1,7 @@
 pub mod operations;
 pub mod transaction;
 
+pub mod account_id;
 pub mod asset;
 pub mod asset_code;
 pub mod claimable_balance_id;

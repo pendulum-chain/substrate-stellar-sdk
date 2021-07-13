@@ -1,23 +1,23 @@
-use crate::{compound_types::LimitedVarOpaque, DataValue, Error};
+use crate::{compound_types::LimitedVarOpaque, DataValue, StellarSdkError};
 
-pub trait AsDataValue {
-    fn as_data_value(self) -> Result<DataValue, Error>;
+pub trait IntoDataValue {
+    fn into_data_value(self) -> Result<DataValue, StellarSdkError>;
 }
 
-impl AsDataValue for DataValue {
-    fn as_data_value(self) -> Result<DataValue, Error> {
+impl IntoDataValue for DataValue {
+    fn into_data_value(self) -> Result<DataValue, StellarSdkError> {
         Ok(self)
     }
 }
 
-impl AsDataValue for &str {
-    fn as_data_value(self) -> Result<DataValue, Error> {
-        self.as_bytes().to_vec().as_data_value()
+impl IntoDataValue for &str {
+    fn into_data_value(self) -> Result<DataValue, StellarSdkError> {
+        self.as_bytes().to_vec().into_data_value()
     }
 }
 
-impl AsDataValue for Vec<u8> {
-    fn as_data_value(self) -> Result<DataValue, Error> {
+impl IntoDataValue for Vec<u8> {
+    fn into_data_value(self) -> Result<DataValue, StellarSdkError> {
         LimitedVarOpaque::new(self)
     }
 }

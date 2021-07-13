@@ -1,7 +1,7 @@
 use core::convert::AsRef;
 use sp_std::vec::Vec;
 
-use crate::Error;
+use crate::StellarSdkError;
 
 const ALPHABET: &'static [u8; 32] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
@@ -47,7 +47,7 @@ pub fn encode<T: AsRef<[u8]>>(binary: T) -> Vec<u8> {
     buffer
 }
 
-pub fn decode<T: AsRef<[u8]>>(string: T) -> Result<Vec<u8>, Error> {
+pub fn decode<T: AsRef<[u8]>>(string: T) -> Result<Vec<u8>, StellarSdkError> {
     let mut result = Vec::with_capacity(string.as_ref().len());
     let mut shift: i8 = 8;
     let mut carry: u8 = 0;
@@ -72,7 +72,7 @@ pub fn decode<T: AsRef<[u8]>>(string: T) -> Result<Vec<u8>, Error> {
                 carry = 0;
             }
         } else {
-            return Err(Error::InvalidBase32Character {
+            return Err(StellarSdkError::InvalidBase32Character {
                 at_position: position,
             });
         }

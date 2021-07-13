@@ -1,17 +1,17 @@
-use crate::{AsBinary, Error, Hash};
+use crate::{AsBinary, StellarSdkError, Hash};
 
 pub trait IntoHash {
-    fn into_hash(self) -> Result<Hash, Error>;
+    fn into_hash(self) -> Result<Hash, StellarSdkError>;
 }
 
 impl IntoHash for Hash {
-    fn into_hash(self) -> Result<Hash, Error> {
+    fn into_hash(self) -> Result<Hash, StellarSdkError> {
         Ok(self)
     }
 }
 
 impl<T: AsRef<[u8]>> IntoHash for AsBinary<T> {
-    fn into_hash(self) -> Result<Hash, Error> {
+    fn into_hash(self) -> Result<Hash, StellarSdkError> {
         self.as_binary()
     }
 }

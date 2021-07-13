@@ -12,9 +12,8 @@ mod lib {
     pub use std::string::String;
 }
 
-pub mod account_id;
-pub mod amount;
-pub mod binary;
+mod amount;
+mod binary;
 mod error;
 pub mod network;
 mod public_key;
@@ -22,7 +21,7 @@ mod secret_key;
 mod utils;
 mod xdr;
 
-pub use error::Error;
+pub use error::StellarSdkError;
 
 pub const BASE_FEE_STROOPS: u32 = 100;
 
@@ -33,17 +32,19 @@ pub mod horizon_types;
 
 pub use xdr::{
     compound_types,
-    impls::{claimable_balance_id::IntoClaimbleBalanceId, data_value::AsDataValue, hash::IntoHash},
+    impls::{
+        account_id::IntoAccountId, claimable_balance_id::IntoClaimbleBalanceId,
+        data_value::IntoDataValue, hash::IntoHash, muxed_account::IntoMuxedAccountId,
+    },
     types::{
         self, AccountId, Asset, AssetCode, ClaimPredicate, ClaimableBalanceId, Claimant,
         Curve25519Secret, DataValue, Hash, LedgerKey, Memo, MuxedAccount, Operation, Price,
-        PublicKey, Signer, SignerKey, TimeBounds, TrustLineFlags,
+        PublicKey, Signer, SignerKey, TimeBounds, Transaction, TrustLineFlags,
     },
     xdr_codec::XdrCodec,
 };
 
-pub use account_id::{IntoAccountId, IntoMuxedAccountId};
-pub use amount::AsAmount;
+pub use amount::*;
 pub use binary::*;
-pub use public_key::IntoPublicKey;
-pub use secret_key::{SecretKey, Signature};
+pub use public_key::*;
+pub use secret_key::*;

@@ -1,6 +1,6 @@
 use crate::{
     types::{AllowTrustOp, OperationBody},
-    AssetCode, Error, IntoAccountId, IntoMuxedAccountId, Operation, TrustLineFlags,
+    AssetCode, IntoAccountId, IntoMuxedAccountId, Operation, StellarSdkError, TrustLineFlags,
 };
 
 impl Operation {
@@ -9,13 +9,13 @@ impl Operation {
         trustor: T,
         asset_code: S,
         authorize: Option<TrustLineFlags>,
-    ) -> Result<Operation, Error> {
+    ) -> Result<Operation, StellarSdkError> {
         let source_account = source_account.map(<_>::into_muxed_account_id).transpose()?;
 
         let authorize: u32 = match authorize {
             Some(authorize) => match authorize {
                 TrustLineFlags::TrustlineClawbackEnabledFlag => {
-                    return Err(Error::InvalidAuthorizeFlag)
+                    return Err(StellarSdkError::InvalidAuthorizeFlag)
                 }
                 _ => authorize as u32,
             },

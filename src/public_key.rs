@@ -5,23 +5,23 @@ use crate::{
         decode_stellar_key, encode_stellar_key, ED25519_PUBLIC_KEY_BYTE_LENGTH,
         ED25519_PUBLIC_KEY_VERSION_BYTE,
     },
-    Error, PublicKey, XdrCodec,
+    StellarSdkError, PublicKey, XdrCodec,
 };
 
 use sodalite::{sign_attached_open, Sign as Signature, SIGN_LEN};
 
 pub trait IntoPublicKey {
-    fn into_public_key(self) -> Result<PublicKey, Error>;
+    fn into_public_key(self) -> Result<PublicKey, StellarSdkError>;
 }
 
 impl IntoPublicKey for PublicKey {
-    fn into_public_key(self) -> Result<PublicKey, Error> {
+    fn into_public_key(self) -> Result<PublicKey, StellarSdkError> {
         Ok(self.clone())
     }
 }
 
 impl<T: AsRef<[u8]>> IntoPublicKey for T {
-    fn into_public_key(self) -> Result<PublicKey, Error> {
+    fn into_public_key(self) -> Result<PublicKey, StellarSdkError> {
         PublicKey::from_encoding(self)
     }
 }
@@ -53,7 +53,7 @@ impl PublicKey {
         *self.as_binary()
     }
 
-    pub fn from_encoding<T: AsRef<[u8]>>(encoded_key: T) -> Result<Self, Error> {
+    pub fn from_encoding<T: AsRef<[u8]>>(encoded_key: T) -> Result<Self, StellarSdkError> {
         let decoded_key = decode_stellar_key(encoded_key, ED25519_PUBLIC_KEY_VERSION_BYTE)?;
         Ok(Self::from_binary(decoded_key))
     }

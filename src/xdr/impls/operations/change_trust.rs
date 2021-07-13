@@ -1,18 +1,18 @@
 use crate::{
     types::{ChangeTrustOp, OperationBody},
-    AsAmount, Asset, Error, IntoMuxedAccountId, Operation,
+    Asset, IntoAmount, IntoMuxedAccountId, Operation, StellarSdkError,
 };
 
 impl Operation {
-    pub fn new_change_trust<T: AsAmount, S: IntoMuxedAccountId>(
+    pub fn new_change_trust<T: IntoAmount, S: IntoMuxedAccountId>(
         source_account: Option<S>,
         line: Asset,
         limit: Option<T>,
-    ) -> Result<Operation, Error> {
+    ) -> Result<Operation, StellarSdkError> {
         let source_account = source_account.map(<_>::into_muxed_account_id).transpose()?;
 
         let limit_stroops = match limit {
-            Some(limit) => limit.as_stroop_amount(true)?,
+            Some(limit) => limit.into_stroop_amount(true)?,
             None => i64::MAX,
         };
 
