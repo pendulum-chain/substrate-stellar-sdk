@@ -1,6 +1,6 @@
 use core::convert::AsRef;
 
-use crate::{xdr::compound_types::LimitedString, AsHash, Error, Memo};
+use crate::{xdr::compound_types::LimitedString, Error, IntoHash, Memo};
 
 impl Memo {
     pub fn from_text_memo<T: AsRef<[u8]>>(text: T) -> Result<Self, Error> {
@@ -13,13 +13,13 @@ impl Memo {
         Self::MemoId(id)
     }
 
-    pub fn from_hash_memo<T: AsHash>(hash: T) -> Result<Self, Error> {
-        let hash = hash.as_hash()?;
+    pub fn from_hash_memo<T: IntoHash>(hash: T) -> Result<Self, Error> {
+        let hash = hash.into_hash()?;
         Ok(Self::MemoHash(hash))
     }
 
-    pub fn from_return_hash_memo<T: AsHash>(return_hash: T) -> Result<Self, Error> {
-        let return_hash = return_hash.as_hash()?;
+    pub fn from_return_hash_memo<T: IntoHash>(return_hash: T) -> Result<Self, Error> {
+        let return_hash = return_hash.into_hash()?;
         Ok(Self::MemoReturn(return_hash))
     }
 }

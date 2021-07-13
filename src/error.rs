@@ -1,7 +1,7 @@
 use base64::DecodeError;
 use hex::FromHexError;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Error {
     InvalidBase32Character {
         at_position: usize,
@@ -58,4 +58,27 @@ pub enum Error {
     NotApproximableAsFraction,
 
     InvalidPrice,
+
+    InvalidTrustLineLimit,
+
+    InvalidAuthorizeFlag,
+
+    InvalidAmountString,
+
+    AmountOverflow,
+
+    AmountNegative,
+
+    AmountNonPositive,
+
+    InvalidBinaryLength {
+        found_length: usize,
+        expected_length: usize,
+    },
+
+    InvalidBalanceId,
+
+    EmptyClaimants,
+
+    InvalidSignerWeight,
 }

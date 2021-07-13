@@ -1,20 +1,32 @@
 use crate::{
     types::{AllowTrustOp, OperationBody},
-    AsPublicKey, AssetCode, Error, MuxedAccount, Operation,
+    AssetCode, Error, IntoAccountId, IntoMuxedAccountId, Operation, TrustLineFlags,
 };
 
 impl Operation {
-    pub fn new_allow_trust<T: AsPublicKey, S: AsRef<[u8]>>(
-        source_account: Option<MuxedAccount>,
+    pub fn new_allow_trust<T: IntoAccountId, S: AsRef<[u8]>, U: IntoMuxedAccountId>(
+        source_account: Option<U>,
         trustor: T,
-        asset: S,
-        authorize: u32,
+        asset_code: S,
+        authorize: Option<TrustLineFlags>,
     ) -> Result<Operation, Error> {
+        let source_account = source_account.map(<_>::into_muxed_account_id).transpose()?;
+
+        let authorize: u32 = match authorize {
+            Some(authorize) => match authorize {
+                TrustLineFlags::TrustlineClawbackEnabledFlag => {
+                    return Err(Error::InvalidAuthorizeFlag)
+                }
+                _ => authorize as u32,
+            },
+            None => 0,
+        };
+
         Ok(Operation {
             source_account,
             body: OperationBody::AllowTrust(AllowTrustOp {
-                trustor: trustor.as_public_key()?,
-                asset: AssetCode::new(asset)?,
+                trustor: trustor.into_account_id()?,
+                asset: AssetCode::new(asset_code)?,
                 authorize,
             }),
         })

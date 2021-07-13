@@ -6,102 +6,19 @@ use sp_std::{prelude::*, vec, vec::Vec};
 use crate::Error;
 
 use sodalite::{
-    sign_attached, sign_attached_open, sign_keypair_seed, SignPublicKey, SignSecretKey, SIGN_LEN,
-    SIGN_PUBLIC_KEY_LEN, SIGN_SECRET_KEY_LEN,
+    sign_attached, sign_keypair_seed, SignPublicKey, SignSecretKey, SIGN_LEN, SIGN_PUBLIC_KEY_LEN,
+    SIGN_SECRET_KEY_LEN,
 };
 
 use crate::{
-    types::{AccountId, Curve25519Secret, PublicKey},
+    types::{Curve25519Secret, PublicKey},
     utils::key_encoding::{
-        decode_stellar_key, encode_stellar_key, ED25519_PUBLIC_KEY_BYTE_LENGTH,
-        ED25519_PUBLIC_KEY_VERSION_BYTE, ED25519_SECRET_SEED_BYTE_LENGTH,
+        decode_stellar_key, encode_stellar_key, ED25519_SECRET_SEED_BYTE_LENGTH,
         ED25519_SECRET_SEED_VERSION_BYTE,
     },
-    XdrCodec,
 };
 
 pub use sodalite::Sign as Signature;
-
-pub trait AsPublicKey {
-    fn as_public_key(&self) -> Result<PublicKey, Error>;
-}
-
-impl AsPublicKey for PublicKey {
-    fn as_public_key(&self) -> Result<PublicKey, Error> {
-        Ok(self.clone())
-    }
-}
-
-impl<T: AsRef<[u8]>> AsPublicKey for T {
-    fn as_public_key(&self) -> Result<PublicKey, Error> {
-        Ok(PublicKey::from_encoding(self)?)
-    }
-}
-
-/// The public key of an Ed25519 signing key pair
-///
-/// This type is also used for Stellar account ids.
-/// ```
-/// let public = "GBIVKYSF6RP4U57KPZ524X47NGTQYYPZAZ4UX5ZFYAYBJWRFXHKHDQVL";
-/// let public_key = substrate_stellar_sdk::types::PublicKey::from_encoding(public);
-/// assert!(public_key.is_ok());
-/// let public_key = public_key.unwrap();
-/// assert_eq!(&public_key.to_encoding().as_slice(), &public.as_bytes());
-/// ```
-impl PublicKey {
-    pub fn from_binary(binary: [u8; ED25519_PUBLIC_KEY_BYTE_LENGTH]) -> Self {
-        PublicKey::PublicKeyTypeEd25519(binary)
-    }
-
-    /// Return the raw binary key as a reference
-    pub fn as_binary(&self) -> &[u8; ED25519_PUBLIC_KEY_BYTE_LENGTH] {
-        match self {
-            PublicKey::PublicKeyTypeEd25519(key) => key,
-        }
-    }
-
-    /// Turn into the raw binary key
-    pub fn into_binary(self) -> [u8; ED25519_PUBLIC_KEY_BYTE_LENGTH] {
-        *self.as_binary()
-    }
-
-    pub fn from_encoding<T: AsRef<[u8]>>(encoded_key: T) -> Result<Self, Error> {
-        let decoded_key = decode_stellar_key(encoded_key, ED25519_PUBLIC_KEY_VERSION_BYTE)?;
-        Ok(Self::from_binary(decoded_key))
-    }
-
-    /// Return the key encoding as an ASCII string (given as `Vec<u8>`)
-    pub fn to_encoding(&self) -> Vec<u8> {
-        let key = self.as_binary();
-        encode_stellar_key(key, ED25519_PUBLIC_KEY_VERSION_BYTE)
-    }
-
-    pub fn get_signature_hint(&self) -> [u8; 4] {
-        let account_id_xdr = AccountId::PublicKeyTypeEd25519(self.as_binary().clone()).to_xdr();
-
-        account_id_xdr[account_id_xdr.len() - 4..]
-            .try_into()
-            .unwrap()
-    }
-
-    /// Verify the signature of a message.
-    ///
-    /// Given the raw binary `message`, check whether the raw binary `signature` is valid.
-    pub fn verify_signature<T: AsRef<[u8]>>(&self, message: T, signature: &Signature) -> bool {
-        let message = message.as_ref();
-        let mut signed_message: Vec<u8> = Vec::with_capacity(message.len() + SIGN_LEN);
-
-        signed_message.extend_from_slice(signature);
-        signed_message.extend_from_slice(message);
-
-        sign_attached_open(
-            &mut vec![0; message.len() + SIGN_LEN],
-            &signed_message,
-            self.as_binary(),
-        )
-        .is_ok()
-    }
-}
 
 /// An Ed25519 signing keypair
 ///
@@ -109,7 +26,7 @@ impl PublicKey {
 /// ```
 /// let secret = "SCDSVACTNFNSD5LQZ5LWUWEY3UIAML2J7ALPFCD6ZX4D3TVJV7X243N3";
 /// let public = "GBIVKYSF6RP4U57KPZ524X47NGTQYYPZAZ4UX5ZFYAYBJWRFXHKHDQVL";
-/// let secret_key = substrate_stellar_sdk::keypair::SecretKey::from_encoding(secret);
+/// let secret_key = substrate_stellar_sdk::SecretKey::from_encoding(secret);
 /// assert!(secret_key.is_ok());
 /// let secret_key = secret_key.unwrap();
 /// assert_eq!(&secret_key.to_encoding().as_slice(), &secret.as_bytes());
@@ -185,7 +102,7 @@ impl SecretKey {
 
 #[cfg(test)]
 mod tests {
-    use crate::keypair::{PublicKey, SecretKey};
+    use crate::secret_key::{PublicKey, SecretKey};
 
     #[test]
     fn keypair() {

@@ -13,6 +13,9 @@ pub const ED25519_PUBLIC_KEY_VERSION_BYTE: u8 = 6 << 3; // G
 pub const ED25519_SECRET_SEED_BYTE_LENGTH: usize = 32;
 pub const ED25519_SECRET_SEED_VERSION_BYTE: u8 = 18 << 3; // S
 
+pub const MED25519_PUBLIC_KEY_BYTE_LENGTH: usize = 40;
+pub const MED25519_PUBLIC_KEY_VERSION_BYTE: u8 = 12 << 3; // M
+
 /// Use Stellar's key encoding to decode a key given as an ASCII string (as `&[u8]`)
 pub fn decode_stellar_key<T: AsRef<[u8]>, const BYTE_LENGTH: usize>(
     encoded_key: T,

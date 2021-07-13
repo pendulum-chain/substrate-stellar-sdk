@@ -5,8 +5,8 @@ use sodalite::SIGN_LEN;
 use sp_std::{prelude::*, vec::Vec};
 
 use crate::{
-    keypair::SecretKey,
     network::Network,
+    secret_key::SecretKey,
     types::{
         AccountId, DecoratedSignature, Memo, MuxedAccount, Operation, PublicKey, TimeBounds,
         Transaction, TransactionEnvelope, TransactionExt, TransactionSignaturePayload,
@@ -204,7 +204,7 @@ mod tests {
         XdrCodec,
     };
 
-    use crate::{keypair::SecretKey, network::TEST_NETWORK};
+    use crate::{network::TEST_NETWORK, secret_key::SecretKey};
 
     const ENVELOPE: &[u8; 408] = b"AAAAAgAAAAC9xFYU1gQJeH4apEfzJkMCsW5DL4GEWRpyVjQHOlWVzgAAAZA\
         CGsQoAAQytgAAAAAAAAAAAAAAAgAAAAAAAAADAAAAAVhMUEcAAAAAxxJMrxQQOx9raxDm3\

@@ -10,7 +10,7 @@ export function initializeOutputPath(outputPath: string) {
 }
 
 const ROOT_MAIN_TYPES =
-  "TransactionEnvelope, TransactionResult, TransactionMeta, EnvelopeType, TransactionSignaturePayload, Curve25519Secret";
+  "TransactionEnvelope, TransactionResult, TransactionMeta, TrustLineFlags, EnvelopeType, TransactionSignaturePayload, Curve25519Secret";
 
 function determineMainTypes(types: Record<string, XdrType>) {
   const remaining = ROOT_MAIN_TYPES.split(",").map((name) => name.trim());

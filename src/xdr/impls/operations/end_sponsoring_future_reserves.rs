@@ -1,15 +1,14 @@
 use crate::{types::OperationBody, Error, IntoMuxedAccountId, Operation};
 
 impl Operation {
-    pub fn new_account_merge<T: IntoMuxedAccountId, S: IntoMuxedAccountId>(
+    pub fn new_end_sponsoring_future_reserves<T: IntoMuxedAccountId>(
         source_account: Option<T>,
-        destination_account: S,
     ) -> Result<Operation, Error> {
         let source_account = source_account.map(<_>::into_muxed_account_id).transpose()?;
 
         Ok(Operation {
             source_account,
-            body: OperationBody::AccountMerge(destination_account.into_muxed_account_id()?),
+            body: OperationBody::EndSponsoringFutureReserves,
         })
     }
 }

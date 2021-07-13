@@ -1,9 +1,8 @@
 use core::convert::AsRef;
 
 use crate::{
-    keypair::AsPublicKey,
     types::{AssetAlphaNum12, AssetAlphaNum4},
-    Asset, AssetCode, Error,
+    Asset, AssetCode, Error, IntoPublicKey,
 };
 
 impl Asset {
@@ -11,7 +10,7 @@ impl Asset {
         Asset::AssetTypeNative
     }
 
-    pub fn from_asset_code<T: AsRef<[u8]>, S: AsPublicKey>(
+    pub fn from_asset_code<T: AsRef<[u8]>, S: IntoPublicKey>(
         asset_code: T,
         issuer: S,
     ) -> Result<Self, Error> {
@@ -21,13 +20,13 @@ impl Asset {
             AssetCode::AssetTypeCreditAlphanum4(asset_code) => {
                 Ok(Self::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
                     asset_code,
-                    issuer: issuer.as_public_key()?,
+                    issuer: issuer.into_public_key()?,
                 }))
             }
             AssetCode::AssetTypeCreditAlphanum12(asset_code) => {
                 Ok(Self::AssetTypeCreditAlphanum12(AssetAlphaNum12 {
                     asset_code,
-                    issuer: issuer.as_public_key()?,
+                    issuer: issuer.into_public_key()?,
                 }))
             }
             AssetCode::Default(_) => unreachable!(),

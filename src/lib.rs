@@ -6,15 +6,19 @@
 extern crate alloc;
 
 mod lib {
-    #[cfg(not(feature = "std"))]
+    #[cfg(all(not(feature = "std"), feature = "offchain"))]
     pub use alloc::string::String;
     #[cfg(feature = "std")]
     pub use std::string::String;
 }
 
+pub mod account_id;
+pub mod amount;
+pub mod binary;
 mod error;
-pub mod keypair;
 pub mod network;
+mod public_key;
+mod secret_key;
 mod utils;
 mod xdr;
 
@@ -27,14 +31,19 @@ pub mod horizon;
 #[cfg(feature = "offchain")]
 pub mod horizon_types;
 
-pub use keypair::AsPublicKey;
-
 pub use xdr::{
     compound_types,
-    impls::hash::AsHash,
+    impls::{claimable_balance_id::IntoClaimbleBalanceId, data_value::AsDataValue, hash::IntoHash},
     types::{
-        self, AccountId, Asset, AssetCode, ClaimPredicate, Curve25519Secret, Hash, LedgerKey, Memo,
-        MuxedAccount, Operation, Price, PublicKey, Signer, SignerKey, TimeBounds,
+        self, AccountId, Asset, AssetCode, ClaimPredicate, ClaimableBalanceId, Claimant,
+        Curve25519Secret, DataValue, Hash, LedgerKey, Memo, MuxedAccount, Operation, Price,
+        PublicKey, Signer, SignerKey, TimeBounds, TrustLineFlags,
     },
     xdr_codec::XdrCodec,
 };
+
+pub use account_id::{IntoAccountId, IntoMuxedAccountId};
+pub use amount::AsAmount;
+pub use binary::*;
+pub use public_key::IntoPublicKey;
+pub use secret_key::{SecretKey, Signature};

@@ -4,16 +4,16 @@ pub trait AsTimePoint {
     fn as_time_bound(self) -> u64;
 }
 
-pub struct MilliSecondEpoch(pub u64);
-pub struct SecondEpoch(pub u64);
+pub struct MilliSecondEpochTime(pub u64);
+pub struct SecondEpochTime(pub u64);
 
-impl AsTimePoint for MilliSecondEpoch {
+impl AsTimePoint for MilliSecondEpochTime {
     fn as_time_bound(self) -> u64 {
         self.0 / 1000
     }
 }
 
-impl AsTimePoint for SecondEpoch {
+impl AsTimePoint for SecondEpochTime {
     fn as_time_bound(self) -> u64 {
         self.0
     }
