@@ -1,6 +1,6 @@
 use crate::{
     types::{ClaimClaimableBalanceOp, OperationBody},
-    StellarSdkError, IntoClaimbleBalanceId, IntoMuxedAccountId, Operation,
+    IntoClaimbleBalanceId, IntoMuxedAccountId, Operation, StellarSdkError,
 };
 
 impl Operation {

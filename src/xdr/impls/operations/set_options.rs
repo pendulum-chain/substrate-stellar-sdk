@@ -3,7 +3,7 @@ use core::convert::AsRef;
 use crate::{
     compound_types::LimitedString,
     types::{OperationBody, SetOptionsOp},
-    StellarSdkError, IntoAccountId, IntoMuxedAccountId, Operation, Signer,
+    IntoAccountId, IntoMuxedAccountId, Operation, Signer, StellarSdkError,
 };
 
 impl Operation {

@@ -38,6 +38,10 @@ impl<const N: i32> LimitedVarOpaque<N> {
     pub fn get_vec(&self) -> &Vec<u8> {
         &self.0
     }
+
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
 }
 
 impl<const N: i32> XdrCodec for LimitedVarOpaque<N> {
@@ -99,6 +103,10 @@ impl<const N: i32> LimitedString<N> {
     /// Returns a reference to the raw byte vector
     pub fn get_vec(&self) -> &Vec<u8> {
         &self.0
+    }
+
+    pub fn len(&self) -> usize {
+        self.0.len()
     }
 }
 
@@ -165,6 +173,10 @@ impl<T, const N: i32> LimitedVarArray<T, N> {
     /// Returns a reference to the byte vector
     pub fn get_vec(&self) -> &Vec<T> {
         &self.0
+    }
+
+    pub fn len(&self) -> usize {
+        self.0.len()
     }
 
     /// Add an element to the byte vector

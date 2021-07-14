@@ -1,4 +1,4 @@
-use crate::{AsBinary, StellarSdkError, Hash};
+use crate::{AsBinary, Hash, StellarSdkError};
 
 pub trait IntoHash {
     fn into_hash(self) -> Result<Hash, StellarSdkError>;

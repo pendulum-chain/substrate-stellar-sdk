@@ -1,4 +1,4 @@
-use crate::{types::OperationBody, StellarSdkError, IntoMuxedAccountId, Operation};
+use crate::{types::OperationBody, IntoMuxedAccountId, Operation, StellarSdkError};
 
 impl Operation {
     pub fn new_inflation<T: IntoMuxedAccountId>(

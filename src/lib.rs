@@ -27,8 +27,6 @@ pub const BASE_FEE_STROOPS: u32 = 100;
 
 #[cfg(feature = "offchain")]
 pub mod horizon;
-#[cfg(feature = "offchain")]
-pub mod horizon_types;
 
 pub use xdr::{
     compound_types,
@@ -38,8 +36,9 @@ pub use xdr::{
     },
     types::{
         self, AccountId, Asset, AssetCode, ClaimPredicate, ClaimableBalanceId, Claimant,
-        Curve25519Secret, DataValue, Hash, LedgerKey, Memo, MuxedAccount, Operation, Price,
-        PublicKey, Signer, SignerKey, TimeBounds, Transaction, TrustLineFlags,
+        Curve25519Secret, DataValue, FeeBumpTransaction, Hash, LedgerKey, Memo, MuxedAccount,
+        Operation, Price, PublicKey, Signer, SignerKey, TimeBounds, Transaction,
+        TransactionEnvelope, TrustLineFlags,
     },
     xdr_codec::XdrCodec,
 };

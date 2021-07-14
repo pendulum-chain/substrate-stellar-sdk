@@ -4,7 +4,7 @@ use crate::{
         decode_stellar_key, encode_stellar_key, ED25519_PUBLIC_KEY_VERSION_BYTE,
         MED25519_PUBLIC_KEY_BYTE_LENGTH, MED25519_PUBLIC_KEY_VERSION_BYTE,
     },
-    AccountId, StellarSdkError, IntoPublicKey, PublicKey, XdrCodec,
+    AccountId, IntoPublicKey, PublicKey, StellarSdkError, XdrCodec,
 };
 
 use core::convert::TryInto;
@@ -79,13 +79,13 @@ pub trait IntoMuxedAccountId: Sized {
 
 impl IntoMuxedAccountId for AccountId {
     fn into_muxed_account_id(self) -> Result<MuxedAccount, StellarSdkError> {
-        Ok(MuxedAccount::KeyTypeEd25519(self.as_binary().clone()))
+        Ok(MuxedAccount::KeyTypeEd25519(self.into_binary()))
     }
 }
 
 impl IntoMuxedAccountId for MuxedAccount {
     fn into_muxed_account_id(self) -> Result<MuxedAccount, StellarSdkError> {
-        Ok(self.clone())
+        Ok(self)
     }
 }
 

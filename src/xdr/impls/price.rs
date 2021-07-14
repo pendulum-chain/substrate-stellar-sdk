@@ -1,6 +1,6 @@
 use num_rational::Ratio;
 
-use crate::{StellarSdkError, Price};
+use crate::{Price, StellarSdkError};
 
 impl Price {
     pub fn from_fraction(denominator: i32, numerator: i32) -> Result<Price, StellarSdkError> {

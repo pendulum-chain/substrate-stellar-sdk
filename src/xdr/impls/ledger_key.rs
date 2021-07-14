@@ -4,7 +4,7 @@ use crate::{
         LedgerKeyAccount, LedgerKeyClaimableBalance, LedgerKeyData, LedgerKeyLiquidityPool,
         LedgerKeyOffer, LedgerKeyTrustLine,
     },
-    Asset, StellarSdkError, IntoAccountId, IntoClaimbleBalanceId, IntoHash, LedgerKey,
+    Asset, IntoAccountId, IntoClaimbleBalanceId, IntoHash, LedgerKey, StellarSdkError,
 };
 
 impl LedgerKey {
@@ -13,12 +13,18 @@ impl LedgerKey {
         Ok(Self::Account(LedgerKeyAccount { account_id }))
     }
 
-    pub fn from_trustline<T: IntoAccountId>(account_id: T, asset: Asset) -> Result<Self, StellarSdkError> {
+    pub fn from_trustline<T: IntoAccountId>(
+        account_id: T,
+        asset: Asset,
+    ) -> Result<Self, StellarSdkError> {
         let account_id = account_id.into_account_id()?;
         Ok(Self::Trustline(LedgerKeyTrustLine { account_id, asset }))
     }
 
-    pub fn from_offer<T: IntoAccountId>(seller_id: T, offer_id: i64) -> Result<Self, StellarSdkError> {
+    pub fn from_offer<T: IntoAccountId>(
+        seller_id: T,
+        offer_id: i64,
+    ) -> Result<Self, StellarSdkError> {
         let seller_id = seller_id.into_account_id()?;
         Ok(Self::Offer(LedgerKeyOffer {
             seller_id,
@@ -47,7 +53,9 @@ impl LedgerKey {
         }))
     }
 
-    pub fn from_liquidity_pool_id<T: IntoHash>(liquidity_pool_id: T) -> Result<Self, StellarSdkError> {
+    pub fn from_liquidity_pool_id<T: IntoHash>(
+        liquidity_pool_id: T,
+    ) -> Result<Self, StellarSdkError> {
         let liquidity_pool_id = liquidity_pool_id.into_hash()?;
         Ok(Self::LiquidityPool(LedgerKeyLiquidityPool {
             liquidity_pool_id,

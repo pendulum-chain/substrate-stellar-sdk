@@ -81,4 +81,6 @@ pub enum StellarSdkError {
     EmptyClaimants,
 
     InvalidSignerWeight,
+
+    CantWrapFeeBumpTransaction,
 }

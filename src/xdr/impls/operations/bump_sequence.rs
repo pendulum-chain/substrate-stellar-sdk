@@ -1,6 +1,6 @@
 use crate::{
     types::{BumpSequenceOp, OperationBody},
-    StellarSdkError, IntoMuxedAccountId, Operation,
+    IntoMuxedAccountId, Operation, StellarSdkError,
 };
 
 impl Operation {

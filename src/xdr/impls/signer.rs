@@ -1,4 +1,4 @@
-use crate::{IntoPublicKey, StellarSdkError, IntoHash, Signer, SignerKey};
+use crate::{IntoHash, IntoPublicKey, Signer, SignerKey, StellarSdkError};
 
 impl Signer {
     pub fn from_ed25519_public_key<T: IntoPublicKey>(

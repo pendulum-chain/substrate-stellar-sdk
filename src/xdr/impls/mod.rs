@@ -1,5 +1,6 @@
 pub mod operations;
 pub mod transaction;
+pub mod transaction_envelope;
 
 pub mod account_id;
 pub mod asset;

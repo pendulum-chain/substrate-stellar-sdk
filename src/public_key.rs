@@ -5,7 +5,7 @@ use crate::{
         decode_stellar_key, encode_stellar_key, ED25519_PUBLIC_KEY_BYTE_LENGTH,
         ED25519_PUBLIC_KEY_VERSION_BYTE,
     },
-    StellarSdkError, PublicKey, XdrCodec,
+    PublicKey, StellarSdkError, XdrCodec,
 };
 
 use sodalite::{sign_attached_open, Sign as Signature, SIGN_LEN};
@@ -16,7 +16,7 @@ pub trait IntoPublicKey {
 
 impl IntoPublicKey for PublicKey {
     fn into_public_key(self) -> Result<PublicKey, StellarSdkError> {
-        Ok(self.clone())
+        Ok(self)
     }
 }
 

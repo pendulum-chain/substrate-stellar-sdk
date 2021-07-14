@@ -1,6 +1,6 @@
 use core::convert::AsRef;
 
-use crate::{xdr::compound_types::LimitedString, StellarSdkError, IntoHash, Memo};
+use crate::{xdr::compound_types::LimitedString, IntoHash, Memo, StellarSdkError};
 
 impl Memo {
     pub fn from_text_memo<T: AsRef<[u8]>>(text: T) -> Result<Self, StellarSdkError> {

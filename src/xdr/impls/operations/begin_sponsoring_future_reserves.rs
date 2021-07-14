@@ -1,6 +1,6 @@
 use crate::{
     types::{BeginSponsoringFutureReservesOp, OperationBody},
-    StellarSdkError, IntoAccountId, IntoMuxedAccountId, Operation,
+    IntoAccountId, IntoMuxedAccountId, Operation, StellarSdkError,
 };
 
 impl Operation {

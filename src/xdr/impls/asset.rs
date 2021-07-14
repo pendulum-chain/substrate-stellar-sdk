@@ -2,7 +2,7 @@ use core::convert::AsRef;
 
 use crate::{
     types::{AssetAlphaNum12, AssetAlphaNum4},
-    Asset, AssetCode, StellarSdkError, IntoPublicKey,
+    Asset, AssetCode, IntoPublicKey, StellarSdkError,
 };
 
 impl Asset {
