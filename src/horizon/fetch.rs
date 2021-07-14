@@ -5,7 +5,7 @@ use sp_runtime::offchain::{
     http::{Error, Method},
     Duration, HttpError,
 };
-use sp_std::{prelude::*, str, vec::Vec};
+use sp_std::{str, vec, vec::Vec};
 
 use core::convert::TryInto;
 
@@ -34,7 +34,7 @@ pub enum FetchError {
     IoError,
     Invalid,
     Unknown,
-    UnexpectedResponseStatus { status: u16 },
+    UnexpectedResponseStatus { status: u16, body: Vec<u8> },
     JsonParseError,
     InvalidSequenceNumber,
     ParseIntError(ParseIntError),
@@ -97,6 +97,7 @@ impl Horizon {
         if response.code != 200 {
             return Err(FetchError::UnexpectedResponseStatus {
                 status: response.code,
+                body: response.body().collect(),
             });
         }
 
@@ -136,7 +137,7 @@ impl Horizon {
     /// Fetch the sequence number of an account
     ///
     /// The sequence number is defined to be of type [i64](https://github.com/stellar/stellar-core/blob/master/src/xdr/Stellar-ledger-entries.x)
-    pub fn fetch_sequence_number<T: IntoAccountId>(
+    pub fn fetch_next_sequence_number<T: IntoAccountId>(
         &self,
         account_id: T,
         timeout_milliseconds: u64,
@@ -147,6 +148,7 @@ impl Horizon {
             Ok(n) => n,
             Err(_) => return Err(FetchError::InvalidSequenceNumber),
         };
-        Ok(sequence_number)
+        let next_sequence_number = sequence_number + 1;
+        Ok(next_sequence_number)
     }
 }

@@ -1,3 +1,5 @@
+use sp_std::vec::Vec;
+
 use core::convert::TryInto;
 
 use crate::StellarSdkError;
@@ -22,8 +24,9 @@ impl<T: AsRef<[u8]>> AsBinary<T> {
             }
 
             AsBinary::Hex(hex) => {
-                let decoded =
-                    hex::decode(hex).map_err(|err| StellarSdkError::InvalidHexEncoding(err))?;
+                let hex = hex.as_ref();
+                let mut decoded: Vec<u8> = Vec::with_capacity(hex.len() / 2);
+                decoded.resize(hex.len() / 2, 0);
                 let decoded_length = decoded.len();
 
                 decoded

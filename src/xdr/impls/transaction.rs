@@ -15,7 +15,7 @@ use crate::{
 impl Transaction {
     pub fn new<T: IntoMuxedAccountId>(
         source_account: T,
-        current_sequence_number: i64,
+        sequence_number: i64,
         total_fee: Option<u32>,
         time_bounds: Option<TimeBounds>,
         memo: Option<Memo>,
@@ -23,7 +23,7 @@ impl Transaction {
         let transaction = Self {
             source_account: source_account.into_muxed_account_id()?,
             fee: total_fee.unwrap_or(BASE_FEE_STROOPS),
-            seq_num: current_sequence_number + 1,
+            seq_num: sequence_number,
             time_bounds,
             memo: memo.unwrap_or(Memo::MemoNone),
             operations: LimitedVarArray::new_empty(),
@@ -95,5 +95,158 @@ impl FeeBumpTransaction {
             tx: self,
             signatures: LimitedVarArray::new_empty(),
         })
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::{
+        network::TEST_NETWORK, Asset, IntoSecretKey, Memo, MilliSecondEpochTime, Operation, Price,
+        SecondEpochTime, StroopAmount, TimeBounds, Transaction, TransactionEnvelope, XdrCodec,
+    };
+
+    const ACCOUNT_ID1: &str = "GDGRDTRINPF66FNC47H22NY6BNWMCD5Q4XZTVA2KG7PFZ64WHRIU62TQ";
+    const ACCOUNT_ID2: &str = "GBNKQVTFRP25TIQRODMU5GJGSXDKHCEUDN7LNMOS5PNM427LMR77NV4M";
+    const ACCOUNT_ID3: &str = "GCACWDM2VEYTXGUI3CUYLBJ453IBEPQ3XEJKA772ARAP5XDQ4NMGFZGJ";
+
+    const SIGNER1: &str = "SCVKZEONBSU3XD6OTHXGAP6BTEWHOU4RPZQZJJ5AVAGPXUZ5A4D7MU6S";
+    const SIGNER3: &str = "SDOKV37I4TI655LMEMDQFOWESJ3LK6DDFKIVTYKN4YYTSAYFIBPP7MYI";
+
+    #[test]
+    fn build_transaction1() {
+        let mut transaction = Transaction::new(
+            ACCOUNT_ID1,
+            1980190376853505,
+            Some(100),
+            Some(TimeBounds::from_time_points(
+                SecondEpochTime(0),
+                SecondEpochTime(1626258131),
+            )),
+            None,
+        )
+        .unwrap();
+
+        transaction
+            .append_operation(
+                Operation::new_payment(None::<&str>, ACCOUNT_ID2, Asset::native(), "123.456")
+                    .unwrap(),
+            )
+            .unwrap();
+
+        let expexted_base64 = b"AAAAAgAAAADNEc4oa8vvFaL\
+            nz603HgtswQ+w5fM6g0o33lz7ljxRTwAAAGQABwj5AAAAAQAAAAEA\
+            AAAAAAAAAAAAAABg7rrTAAAAAAAAAAEAAAAAAAAAAQAAAABaqFZli\
+            /XZohFw2U6ZJpXGo4iUG362sdLr2s5r62R/9gAAAAAAAAAASZXkAA\
+            AAAAAAAAAA";
+        let envelope = transaction.into_transaction_envelope();
+
+        assert_eq!(
+            envelope,
+            TransactionEnvelope::from_base64_xdr(expexted_base64).unwrap()
+        );
+        assert_eq!(envelope.to_base64_xdr(), expexted_base64);
+    }
+
+    #[test]
+    fn build_transaction2() {
+        let mut transaction = Transaction::new(
+            ACCOUNT_ID1,
+            1980190376853505,
+            Some(321),
+            Some(TimeBounds::from_time_points(
+                SecondEpochTime(0),
+                SecondEpochTime(0),
+            )),
+            Some(Memo::from_text_memo("Hello World!").unwrap()),
+        )
+        .unwrap();
+
+        transaction
+            .append_operation(
+                Operation::new_payment(
+                    None::<&str>,
+                    ACCOUNT_ID2,
+                    Asset::from_asset_code("USD", ACCOUNT_ID3).unwrap(),
+                    StroopAmount(1234560000),
+                )
+                .unwrap(),
+            )
+            .unwrap();
+
+        let expexted_base64 = b"AAAAAgAAAADNEc4oa8vvFaLnz603HgtswQ+w5fM6g0o33lz7ljxRTwAAAUEABwj5AAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAxIZWxsbyBXb3JsZCEAAAABAAAAAAAAAAEAAAAAWqhWZYv12aIRcNlOmSaVxqOIlBt+trHS69rOa+tkf/YAAAABVVNEAAAAAACAKw2aqTE7mojYqYWFPO7QEj4buRKgf/oEQP7ccONYYgAAAABJleQAAAAAAAAAAAA=";
+        let envelope = transaction.into_transaction_envelope();
+
+        assert_eq!(
+            envelope,
+            TransactionEnvelope::from_base64_xdr(expexted_base64).unwrap()
+        );
+        assert_eq!(envelope.to_base64_xdr(), expexted_base64);
+    }
+
+    #[test]
+    fn build_transaction3() {
+        let mut transaction = Transaction::new(
+            ACCOUNT_ID1,
+            1980190376853505,
+            Some(2 * 321),
+            Some(TimeBounds::from_time_points(
+                SecondEpochTime(162620000),
+                MilliSecondEpochTime(1626263454_000),
+            )),
+            Some(Memo::from_text_memo("Hello World!").unwrap()),
+        )
+        .unwrap();
+
+        transaction
+            .append_operation(
+                Operation::new_payment(
+                    Some(ACCOUNT_ID3),
+                    ACCOUNT_ID2,
+                    Asset::from_asset_code("USD", ACCOUNT_ID3).unwrap(),
+                    StroopAmount(1234560000),
+                )
+                .unwrap(),
+            )
+            .unwrap();
+
+        transaction
+            .append_operation(
+                Operation::new_manage_sell_offer(
+                    None::<&str>,
+                    Asset::from_asset_code("DOMINATION", ACCOUNT_ID2).unwrap(),
+                    Asset::native(),
+                    "152.103",
+                    Price::from_float(4.58).unwrap(),
+                    Some(123456789),
+                )
+                .unwrap(),
+            )
+            .unwrap();
+
+        let expexted_base64 = b"AAAAAgAAAADNEc4oa8vvFaLnz603HgtswQ+w5fM6g0o33lz7ljxRTwAAAoIABwj5AAAAAQAAAAEAAAAACbFiYAAAAABg7s+eAAAAAQAAAAxIZWxsbyBXb3JsZCEAAAACAAAAAQAAAACAKw2aqTE7mojYqYWFPO7QEj4buRKgf/oEQP7ccONYYgAAAAEAAAAAWqhWZYv12aIRcNlOmSaVxqOIlBt+trHS69rOa+tkf/YAAAABVVNEAAAAAACAKw2aqTE7mojYqYWFPO7QEj4buRKgf/oEQP7ccONYYgAAAABJleQAAAAAAAAAAAMAAAACRE9NSU5BVElPTgAAAAAAAFqoVmWL9dmiEXDZTpkmlcajiJQbfrax0uvazmvrZH/2AAAAAAAAAABaqRNwAAAA5QAAADIAAAAAB1vNFQAAAAAAAAAA";
+        let mut envelope = transaction.into_transaction_envelope();
+
+        assert_eq!(
+            envelope,
+            TransactionEnvelope::from_base64_xdr(expexted_base64).unwrap()
+        );
+        assert_eq!(envelope.to_base64_xdr(), expexted_base64);
+
+        envelope
+            .sign(
+                &TEST_NETWORK,
+                vec![
+                    &SIGNER1.into_secret_key().unwrap(),
+                    &SIGNER3.into_secret_key().unwrap(),
+                ],
+            )
+            .unwrap();
+
+        let expexted_singed_base64 = b"AAAAAgAAAADNEc4oa8vvFaLnz603HgtswQ+w5fM6g0o33lz7ljxRTwAAAoIABwj5AAAAAQAAAAEAAAAACbFiYAAAAABg7s+eAAAAAQAAAAxIZWxsbyBXb3JsZCEAAAACAAAAAQAAAACAKw2aqTE7mojYqYWFPO7QEj4buRKgf/oEQP7ccONYYgAAAAEAAAAAWqhWZYv12aIRcNlOmSaVxqOIlBt+trHS69rOa+tkf/YAAAABVVNEAAAAAACAKw2aqTE7mojYqYWFPO7QEj4buRKgf/oEQP7ccONYYgAAAABJleQAAAAAAAAAAAMAAAACRE9NSU5BVElPTgAAAAAAAFqoVmWL9dmiEXDZTpkmlcajiJQbfrax0uvazmvrZH/2AAAAAAAAAABaqRNwAAAA5QAAADIAAAAAB1vNFQAAAAAAAAACljxRTwAAAEB0B8vODxIESpa9H9f4QkPtFHVg4Xjx2A9aTncJOkW6BW0i1AxZFgMvrzEb7nO5UnXRvCKnBmuhpvA76YivAXYGcONYYgAAAECesooI2hhhuoOcLcXB76L58vMOrFvPFqpIeG+/zzLZXz0XYU6aELdtDxLAhK8GZCIZwlXdJ/RyZF9/2YzqbPMC";
+        assert_eq!(
+            envelope,
+            TransactionEnvelope::from_base64_xdr(expexted_singed_base64).unwrap()
+        );
+        assert_eq!(envelope.to_base64_xdr(), expexted_singed_base64);
     }
 }

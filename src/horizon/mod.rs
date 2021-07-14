@@ -1,3 +1,5 @@
+use sp_std::vec::Vec;
+
 mod json_response_types;
 
 pub mod api_response_types;

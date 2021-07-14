@@ -1,3 +1,5 @@
+use sp_std::vec::Vec;
+
 use crate::{
     types::{OperationBody, SetTrustLineFlagsOp},
     Asset, IntoAccountId, IntoMuxedAccountId, Operation, StellarSdkError, TrustLineFlags,

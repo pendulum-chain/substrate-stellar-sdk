@@ -1,5 +1,7 @@
 use core::convert::TryInto;
 
+use sp_std::{vec, vec::Vec};
+
 use crate::{
     utils::key_encoding::{
         decode_stellar_key, encode_stellar_key, ED25519_PUBLIC_KEY_BYTE_LENGTH,

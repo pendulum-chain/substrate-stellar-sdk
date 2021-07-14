@@ -20,6 +20,22 @@ use crate::{
 
 pub use sodalite::Sign as Signature;
 
+pub trait IntoSecretKey {
+    fn into_secret_key(self) -> Result<SecretKey, StellarSdkError>;
+}
+
+impl IntoSecretKey for SecretKey {
+    fn into_secret_key(self) -> Result<SecretKey, StellarSdkError> {
+        Ok(self)
+    }
+}
+
+impl<T: AsRef<[u8]>> IntoSecretKey for T {
+    fn into_secret_key(self) -> Result<SecretKey, StellarSdkError> {
+        SecretKey::from_encoding(self)
+    }
+}
+
 /// An Ed25519 signing keypair
 ///
 /// This type is used for signing Stellar transactions.

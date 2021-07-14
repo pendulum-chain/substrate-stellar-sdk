@@ -1446,7 +1446,7 @@ dependencies = [
  "serde",
  "sp-core",
  "sp-io",
- "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-std",
 ]
 
 [[package]]
@@ -1460,7 +1460,7 @@ dependencies = [
  "parity-scale-codec",
  "serde",
  "sp-debug-derive",
- "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-std",
 ]
 
 [[package]]
@@ -1497,7 +1497,7 @@ dependencies = [
  "sp-debug-derive",
  "sp-externalities",
  "sp-runtime-interface",
- "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-std",
  "sp-storage",
  "substrate-bip39",
  "thiserror",
@@ -1527,7 +1527,7 @@ checksum = "2fdc625f8c7b13b9a136d334888b21b5743d2081cb666cb03efca1dc9b8f74d1"
 dependencies = [
  "environmental",
  "parity-scale-codec",
- "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-std",
  "sp-storage",
 ]
 
@@ -1548,7 +1548,7 @@ dependencies = [
  "sp-keystore",
  "sp-runtime-interface",
  "sp-state-machine",
- "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-std",
  "sp-tracing",
  "sp-trie",
  "sp-wasm-interface",
@@ -1601,7 +1601,7 @@ dependencies = [
  "sp-arithmetic",
  "sp-core",
  "sp-io",
- "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-std",
 ]
 
 [[package]]
@@ -1615,7 +1615,7 @@ dependencies = [
  "primitive-types",
  "sp-externalities",
  "sp-runtime-interface-proc-macro",
- "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-std",
  "sp-storage",
  "sp-tracing",
  "sp-wasm-interface",
@@ -1651,7 +1651,7 @@ dependencies = [
  "sp-core",
  "sp-externalities",
  "sp-panic-handler",
- "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-std",
  "sp-trie",
  "thiserror",
  "trie-db",
@@ -1665,11 +1665,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "35391ea974fa5ee869cb094d5b437688fbf3d8127d64d1b9fed5822a1ed39b12"
 
 [[package]]
-name = "sp-std"
-version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate#9235309a7c651fc23bdbe653834c102dc2db9c9b"
-
-[[package]]
 name = "sp-storage"
 version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1680,7 +1675,7 @@ dependencies = [
  "ref-cast",
  "serde",
  "sp-debug-derive",
- "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-std",
 ]
 
 [[package]]
@@ -1691,7 +1686,7 @@ checksum = "567382d8d4e14fb572752863b5cd57a78f9e9a6583332b590b726f061f3ea957"
 dependencies = [
  "log",
  "parity-scale-codec",
- "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-std",
  "tracing",
  "tracing-core",
  "tracing-subscriber",
@@ -1707,7 +1702,7 @@ dependencies = [
  "memory-db",
  "parity-scale-codec",
  "sp-core",
- "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-std",
  "trie-db",
  "trie-root",
 ]
@@ -1720,7 +1715,7 @@ checksum = "b214e125666a6416cf30a70cc6a5dacd34a4e5197f8a3d479f714af7e1dc7a47"
 dependencies = [
  "impl-trait-for-tuples",
  "parity-scale-codec",
- "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-std",
  "wasmi",
 ]
 
@@ -1763,7 +1758,7 @@ dependencies = [
  "sodalite",
  "sp-io",
  "sp-runtime",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate)",
+ "sp-std",
 ]
 
 [[package]]

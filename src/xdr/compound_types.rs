@@ -1,7 +1,7 @@
 //! Generic types for encoding XDR variable length arrays and strings
 
 use core::convert::AsRef;
-use sp_std::{prelude::*, vec::Vec};
+use sp_std::{vec, vec::Vec};
 
 use super::streams::{DecodeError, ReadStream, WriteStream};
 use super::xdr_codec::XdrCodec;

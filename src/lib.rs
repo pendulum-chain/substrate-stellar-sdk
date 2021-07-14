@@ -33,6 +33,7 @@ pub use xdr::{
     impls::{
         account_id::IntoAccountId, claimable_balance_id::IntoClaimbleBalanceId,
         data_value::IntoDataValue, hash::IntoHash, muxed_account::IntoMuxedAccountId,
+        time_bounds::*,
     },
     types::{
         self, AccountId, Asset, AssetCode, ClaimPredicate, ClaimableBalanceId, Claimant,

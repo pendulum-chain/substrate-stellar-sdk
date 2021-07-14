@@ -1,4 +1,5 @@
 use crate::{compound_types::LimitedVarOpaque, DataValue, StellarSdkError};
+use sp_std::vec::Vec;
 
 pub trait IntoDataValue {
     fn into_data_value(self) -> Result<DataValue, StellarSdkError>;

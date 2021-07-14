@@ -1,3 +1,5 @@
+use sp_std::vec::Vec;
+
 use crate::{
     types::{MuxedAccount, MuxedAccountMed25519, Uint64},
     utils::key_encoding::{
@@ -7,7 +9,7 @@ use crate::{
     AccountId, IntoPublicKey, PublicKey, StellarSdkError, XdrCodec,
 };
 
-use core::convert::TryInto;
+use core::convert::{AsRef, TryInto};
 
 impl MuxedAccount {
     pub fn from_account_id<T: IntoPublicKey>(account_id: T) -> Result<Self, StellarSdkError> {
@@ -73,7 +75,7 @@ impl MuxedAccount {
 // This can be both an account id or a muxed account id.
 // For that reason it would be better to call it AsPossiblyMuxedAccountId
 // but Stellar just calls this a MuxedAccount, too.
-pub trait IntoMuxedAccountId: Sized {
+pub trait IntoMuxedAccountId {
     fn into_muxed_account_id(self) -> Result<MuxedAccount, StellarSdkError>;
 }
 

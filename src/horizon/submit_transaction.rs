@@ -1,6 +1,6 @@
 use serde_json::Value;
 use sp_runtime::offchain::http::Method;
-use sp_std::{prelude::*, vec::Vec};
+use sp_std::{vec, vec::Vec};
 
 use super::{FetchError, Horizon};
 use crate::{
@@ -70,7 +70,10 @@ impl Horizon {
 
             let account_response = match account_response {
                 Ok(account_response) => account_response,
-                Err(FetchError::UnexpectedResponseStatus { status: 404 }) => continue,
+                Err(FetchError::UnexpectedResponseStatus {
+                    status: 404,
+                    body: _,
+                }) => continue,
                 Err(error) => return Err(error),
             };
 
@@ -107,7 +110,7 @@ impl Horizon {
 
         let envelope_base64 = transaction_envelope.to_base64_xdr();
         let json = self.request(
-            vec![b"transactions/tx=", &percent_encode(envelope_base64)[..]],
+            vec![b"/transactions?tx=", &percent_encode(envelope_base64)[..]],
             Method::Post,
             timeout_milliseconds,
         )?;
