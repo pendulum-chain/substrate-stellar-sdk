@@ -6,14 +6,14 @@ use crate::{
         decode_stellar_key, encode_stellar_key, ED25519_PUBLIC_KEY_VERSION_BYTE,
         MED25519_PUBLIC_KEY_BYTE_LENGTH, MED25519_PUBLIC_KEY_VERSION_BYTE,
     },
-    AccountId, IntoPublicKey, PublicKey, StellarSdkError, XdrCodec,
+    AccountId, IntoAccountId, PublicKey, StellarSdkError, XdrCodec,
 };
 
 use core::convert::{AsRef, TryInto};
 
 impl MuxedAccount {
-    pub fn from_account_id<T: IntoPublicKey>(account_id: T) -> Result<Self, StellarSdkError> {
-        account_id.into_public_key().map(|account_id| {
+    pub fn from_account_id<T: IntoAccountId>(account_id: T) -> Result<Self, StellarSdkError> {
+        account_id.into_account_id().map(|account_id| {
             let account_id = match account_id {
                 PublicKey::PublicKeyTypeEd25519(account_id) => account_id,
             };
@@ -21,11 +21,11 @@ impl MuxedAccount {
         })
     }
 
-    pub fn from_muxed_account_id<T: IntoPublicKey>(
+    pub fn from_muxed_account_id<T: IntoAccountId>(
         account_id: T,
         sub_account_id: u64,
     ) -> Result<Self, StellarSdkError> {
-        account_id.into_public_key().map(|account_id| {
+        account_id.into_account_id().map(|account_id| {
             let account_id = match account_id {
                 PublicKey::PublicKeyTypeEd25519(account_id) => account_id,
             };

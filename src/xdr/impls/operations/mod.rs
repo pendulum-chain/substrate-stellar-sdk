@@ -1,3 +1,5 @@
+use crate::{IntoMuxedAccountId, Operation, StellarSdkError};
+
 pub mod account_merge;
 pub mod allow_trust;
 pub mod begin_sponsoring_future_reserves;
@@ -20,3 +22,13 @@ pub mod payment;
 pub mod revoke_sponsorship;
 pub mod set_options;
 pub mod set_trust_line_flags;
+
+impl Operation {
+    pub fn set_source_account<T: IntoMuxedAccountId>(
+        mut self,
+        source_account: T,
+    ) -> Result<Self, StellarSdkError> {
+        self.source_account = Some(source_account.into_muxed_account_id()?);
+        Ok(self)
+    }
+}

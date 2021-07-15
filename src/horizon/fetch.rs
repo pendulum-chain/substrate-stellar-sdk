@@ -9,7 +9,7 @@ use sp_std::{str, vec, vec::Vec};
 
 use core::convert::TryInto;
 
-use crate::{AccountId, IntoAccountId};
+use crate::{AccountId, IntoAccountId, StellarSdkError};
 
 use super::{
     api_response_types::FeeStats, json_response_types, Horizon, HTTP_HEADER_CLIENT_NAME,
@@ -49,6 +49,12 @@ impl From<Error> for FetchError {
             Error::IoError => FetchError::IoError,
             Error::Unknown => FetchError::Unknown,
         }
+    }
+}
+
+impl From<FetchError> for StellarSdkError {
+    fn from(error: FetchError) -> Self {
+        StellarSdkError::FetchError(error)
     }
 }
 

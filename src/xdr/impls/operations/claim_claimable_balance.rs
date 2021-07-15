@@ -1,19 +1,16 @@
 use crate::{
     types::{ClaimClaimableBalanceOp, OperationBody},
-    IntoClaimbleBalanceId, IntoMuxedAccountId, Operation, StellarSdkError,
+    IntoClaimbleBalanceId, Operation, StellarSdkError,
 };
 
 impl Operation {
-    pub fn new_claim_claimable_balance<T: IntoClaimbleBalanceId, S: IntoMuxedAccountId>(
-        source_account: Option<S>,
+    pub fn new_claim_claimable_balance<T: IntoClaimbleBalanceId>(
         balance_id: T,
     ) -> Result<Operation, StellarSdkError> {
-        let source_account = source_account.map(<_>::into_muxed_account_id).transpose()?;
-
         let balance_id = balance_id.into_claimable_balance_id()?;
 
         Ok(Operation {
-            source_account,
+            source_account: None,
             body: OperationBody::ClaimClaimableBalance(ClaimClaimableBalanceOp { balance_id }),
         })
     }

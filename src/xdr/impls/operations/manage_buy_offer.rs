@@ -1,21 +1,18 @@
 use crate::{
     types::{ManageBuyOfferOp, OperationBody},
-    Asset, IntoAmount, IntoMuxedAccountId, Operation, Price, StellarSdkError,
+    Asset, IntoAmount, Operation, Price, StellarSdkError,
 };
 
 impl Operation {
-    pub fn new_manage_buy_offer<T: IntoMuxedAccountId, S: IntoAmount>(
-        source_account: Option<T>,
+    pub fn new_manage_buy_offer<S: IntoAmount>(
         selling: Asset,
         buying: Asset,
         buy_amount: S,
         price: Price,
         offer_id: Option<i64>,
     ) -> Result<Operation, StellarSdkError> {
-        let source_account = source_account.map(<_>::into_muxed_account_id).transpose()?;
-
         Ok(Operation {
-            source_account,
+            source_account: None,
             body: OperationBody::ManageBuyOffer(ManageBuyOfferOp {
                 selling,
                 buying,

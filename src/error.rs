@@ -1,6 +1,9 @@
 use base64::DecodeError;
 use hex::FromHexError;
 
+#[cfg(feature = "offchain")]
+use crate::horizon::FetchError;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum StellarSdkError {
     InvalidBase32Character {
@@ -83,4 +86,7 @@ pub enum StellarSdkError {
     InvalidSignerWeight,
 
     CantWrapFeeBumpTransaction,
+
+    #[cfg(feature = "offchain")]
+    FetchError(FetchError)
 }

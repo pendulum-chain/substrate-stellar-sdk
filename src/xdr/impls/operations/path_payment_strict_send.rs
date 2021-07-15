@@ -8,12 +8,10 @@ use crate::{
 
 impl Operation {
     pub fn new_path_payment_strict_send<
-        T: IntoMuxedAccountId,
         S: IntoAmount,
         U: IntoAmount,
         V: IntoMuxedAccountId,
     >(
-        source_account: Option<T>,
         send_asset: Asset,
         send_amount: S,
         destination: V,
@@ -21,15 +19,13 @@ impl Operation {
         dest_min: U,
         path: Option<Vec<Asset>>,
     ) -> Result<Operation, StellarSdkError> {
-        let source_account = source_account.map(<_>::into_muxed_account_id).transpose()?;
-
         let path = match path {
             Some(path) => LimitedVarArray::new(path)?,
             None => LimitedVarArray::new_empty(),
         };
 
         Ok(Operation {
-            source_account,
+            source_account: None,
             body: OperationBody::PathPaymentStrictSend(PathPaymentStrictSendOp {
                 send_asset,
                 send_amount: send_amount.into_stroop_amount(false)?,

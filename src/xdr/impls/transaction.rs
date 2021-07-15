@@ -16,13 +16,15 @@ impl Transaction {
     pub fn new<T: IntoMuxedAccountId>(
         source_account: T,
         sequence_number: i64,
-        total_fee: Option<u32>,
+        fee_per_operation: Option<u32>,
         time_bounds: Option<TimeBounds>,
         memo: Option<Memo>,
     ) -> Result<Self, StellarSdkError> {
+        let time_bounds = time_bounds.or(Some(TimeBounds::from_time_points((), ())));
+
         let transaction = Self {
             source_account: source_account.into_muxed_account_id()?,
-            fee: total_fee.unwrap_or(BASE_FEE_STROOPS),
+            fee: fee_per_operation.unwrap_or(BASE_FEE_STROOPS),
             seq_num: sequence_number,
             time_bounds,
             memo: memo.unwrap_or(Memo::MemoNone),
@@ -37,7 +39,13 @@ impl Transaction {
         self.operations.push(operation)
     }
 
-    pub fn into_transaction_envelope(self) -> TransactionEnvelope {
+    // careful: this operation also multiplies the fees with the number of operations
+    pub fn into_transaction_envelope(mut self) -> TransactionEnvelope {
+        self.fee = self
+            .fee
+            .checked_mul(self.operations.len() as u32)
+            .unwrap_or(self.fee);
+
         TransactionEnvelope::EnvelopeTypeTx(TransactionV1Envelope {
             tx: self,
             signatures: LimitedVarArray::new_empty(),
@@ -128,8 +136,7 @@ mod test {
 
         transaction
             .append_operation(
-                Operation::new_payment(None::<&str>, ACCOUNT_ID2, Asset::native(), "123.456")
-                    .unwrap(),
+                Operation::new_payment(ACCOUNT_ID2, Asset::native(), "123.456").unwrap(),
             )
             .unwrap();
 
@@ -164,7 +171,6 @@ mod test {
         transaction
             .append_operation(
                 Operation::new_payment(
-                    None::<&str>,
                     ACCOUNT_ID2,
                     Asset::from_asset_code("USD", ACCOUNT_ID3).unwrap(),
                     StroopAmount(1234560000),
@@ -200,11 +206,12 @@ mod test {
         transaction
             .append_operation(
                 Operation::new_payment(
-                    Some(ACCOUNT_ID3),
                     ACCOUNT_ID2,
                     Asset::from_asset_code("USD", ACCOUNT_ID3).unwrap(),
                     StroopAmount(1234560000),
                 )
+                .unwrap()
+                .set_source_account(ACCOUNT_ID3)
                 .unwrap(),
             )
             .unwrap();
@@ -212,7 +219,6 @@ mod test {
         transaction
             .append_operation(
                 Operation::new_manage_sell_offer(
-                    None::<&str>,
                     Asset::from_asset_code("DOMINATION", ACCOUNT_ID2).unwrap(),
                     Asset::native(),
                     "152.103",

@@ -11,14 +11,9 @@ impl IntoDataValue for DataValue {
     }
 }
 
-impl IntoDataValue for &str {
+impl<T: AsRef<[u8]>> IntoDataValue for T {
     fn into_data_value(self) -> Result<DataValue, StellarSdkError> {
-        self.as_bytes().to_vec().into_data_value()
-    }
-}
-
-impl IntoDataValue for Vec<u8> {
-    fn into_data_value(self) -> Result<DataValue, StellarSdkError> {
-        LimitedVarOpaque::new(self)
+        let value = self.as_ref();
+        LimitedVarOpaque::new(Vec::from(value))
     }
 }

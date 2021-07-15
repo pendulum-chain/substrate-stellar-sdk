@@ -1,13 +1,10 @@
-use crate::{types::OperationBody, IntoMuxedAccountId, Operation, StellarSdkError};
+use crate::{types::OperationBody, Operation, StellarSdkError};
 
 impl Operation {
-    pub fn new_inflation<T: IntoMuxedAccountId>(
-        source_account: Option<T>,
+    pub fn new_inflation(
     ) -> Result<Operation, StellarSdkError> {
-        let source_account = source_account.map(<_>::into_muxed_account_id).transpose()?;
-
         Ok(Operation {
-            source_account,
+            source_account: None,
             body: OperationBody::Inflation,
         })
     }

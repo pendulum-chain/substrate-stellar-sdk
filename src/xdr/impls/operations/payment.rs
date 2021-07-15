@@ -4,16 +4,13 @@ use crate::{
 };
 
 impl Operation {
-    pub fn new_payment<T: IntoMuxedAccountId, S: IntoMuxedAccountId, U: IntoAmount>(
-        source_account: Option<T>,
+    pub fn new_payment<S: IntoMuxedAccountId, U: IntoAmount>(
         destination: S,
         asset: Asset,
         amount: U,
     ) -> Result<Operation, StellarSdkError> {
-        let source_account = source_account.map(<_>::into_muxed_account_id).transpose()?;
-
         Ok(Operation {
-            source_account,
+            source_account: None,
             body: OperationBody::Payment(PaymentOp {
                 destination: destination.into_muxed_account_id()?,
                 asset,

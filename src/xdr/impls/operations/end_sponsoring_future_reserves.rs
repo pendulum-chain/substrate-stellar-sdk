@@ -1,13 +1,9 @@
-use crate::{types::OperationBody, IntoMuxedAccountId, Operation, StellarSdkError};
+use crate::{types::OperationBody, Operation, StellarSdkError};
 
 impl Operation {
-    pub fn new_end_sponsoring_future_reserves<T: IntoMuxedAccountId>(
-        source_account: Option<T>,
-    ) -> Result<Operation, StellarSdkError> {
-        let source_account = source_account.map(<_>::into_muxed_account_id).transpose()?;
-
+    pub fn new_end_sponsoring_future_reserves() -> Result<Operation, StellarSdkError> {
         Ok(Operation {
-            source_account,
+            source_account: None,
             body: OperationBody::EndSponsoringFutureReserves,
         })
     }
