@@ -1,8 +1,6 @@
 # Generator of Stellar XDR type Encoder/Decoder
 
-The code in this directory generates a Rust decoder and encoder of all XDR types used in Stellar. The generated crate is to be used with [Substrate](https://www.substrate.io/).
-
-This generates the crate `substrate-stellar-xdr` on [crates.io](https://crates.io/crates/substrate-stellar-xdr).
+The code in this directory generates a Rust decoder and encoder of all XDR types used in Stellar. It generates the code in the file `src/xdr/types.rs`
 
 # How to use
 
@@ -30,10 +28,6 @@ npm run build
   - this code is in the folder `js-xdr`
 - copy static Rust files to the generated Rust code to complete the crate
   - the static Rust files are in the folder `static`
-
-# Tests
-
-Run a simple test suite via `npm run test`. This requires to execute Step 1 (specified above) first.
 
 # Assumptions
 

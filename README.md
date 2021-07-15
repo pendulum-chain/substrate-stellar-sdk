@@ -2,12 +2,13 @@
 
 This is an SDK for [Stellar](https://stellar.org) that is suitable for use in a [Substrate](https://substrate.dev/) project. It does not depend on the standard library but on the crate [`sp-std`](https://crates.io/crates/sp-std), which is Substrate's replacement of Rust's standard library.
 
-## Features
+## Crate Features
 
-This crate has two features:
+This crate has three features:
 
 - `std`: This feature will enable the standard library. It is enabled by default, therefore this crate needs to be imported using `default-features = false` in a Substrate project.
 - `offchain`: This is a collection of features usable in an offchain worker, where http requests are possible. It mainly comprises an abstraction layer over parts of the [Horizon API](https://developers.stellar.org/api/).
+- `all-types`: This will give access to all types defined in Stellar, even types that are only required internally for the Stellar Consensus Protocol. Otherwise, this crate will only give access to user-facing types such as `Transaction` or `Operation` (see the section about [Stellar types](#stellar-xdr-types))
 
 ## Conversion traits
 
@@ -110,7 +111,7 @@ This is the trait for parameters that represent a point in time used by transact
 - `SecondEpochTime`: a unix timestamp represented in seconds
 - `()`: for an unlimited time bound
 
-## Create, sign and submit transaction
+## Create, Sign and Submit Transactions
 
 This is one of the main workflows when using this SDK. Note that these features only become available when using the crate feature `offchain`. It usually consists of the following steps:
 
@@ -197,3 +198,22 @@ envelope.sign(
 let submission_response = horizon.submit_transaction(&envelope, 60_000, true);
 debug::info!("Response: {:?}", submission_response);
 ```
+
+## Stellar XDR Types
+
+Stellar defines a bunch of [data types](https://github.com/stellar/stellar-core/tree/master/src/xdr) on a protocol level. These types are serialized and deserialized using the [XDR standard](https://datatracker.ietf.org/doc/html/rfc4506.html).
+
+This crates contains all these Stellar defined types (in `substrate_stellar_sdk::types`) including a complete XDR encoder and decoder for these types. For that purpose every type implements the trait `XdrCodec`, which provides the following methods:
+
+- `fn to_xdr(&self) -> Vec<u8>`: encode as binary XDR
+- `fn to_base64_xdr(&self) -> Vec<u8>`: encode as XDR, afterwards encode result as base64
+- `from_xdr<T: AsRef<[u8]>>(input: T) -> Result<Self, DecodeError>`: decode binary XDR
+- `from_base64_xdr<T: AsRef<[u8]>>(input: T) -> Result<Self, DecodeError>`: decode as base64, then decode result as XDR
+
+### Autogenerator
+
+The types and the XDR decoder are automatically generated via the tool in `/autogenerator`. This generator will download the latest Stellar types from the Stellar Core GitHub repository and will generate the types and XDR decoder.
+
+### Crate Feature `all-types`
+
+By default not all Stellar types will be generated. Missing types are special types that are only used internally for the consensus mechanism. In order to generate all types, use the feature flag `all-types`.
