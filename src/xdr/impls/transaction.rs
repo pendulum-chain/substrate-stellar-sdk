@@ -194,7 +194,7 @@ mod test {
         let mut transaction = Transaction::new(
             ACCOUNT_ID1,
             1980190376853505,
-            Some(2 * 321),
+            Some(321),
             Some(TimeBounds::from_time_points(
                 SecondEpochTime(162620000),
                 MilliSecondEpochTime(1626263454_000),
