@@ -36,6 +36,7 @@ pub use xdr::{
         data_value::IntoDataValue, hash::IntoHash, muxed_account::IntoMuxedAccountId,
         time_bounds::*,
     },
+    streams::{ReadStream, WriteStream},
     types::{
         self, AccountId, Asset, AssetCode, ClaimPredicate, ClaimableBalanceId, Claimant,
         Curve25519Secret, DataValue, FeeBumpTransaction, Hash, LedgerKey, Memo, MuxedAccount,
