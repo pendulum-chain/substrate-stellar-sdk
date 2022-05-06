@@ -1,33 +1,32 @@
 [package]
-name = "substrate-stellar-sdk"
-version = "0.2.2"
 authors = ["Torsten Stüber <torsten@satoshipay.io>"]
-edition = "2018"
-license = "Apache-2.0"  
 description = "A Substrate compatible SDK for Stellar"
-repository = "https://github.com/pendulum-chain/substrate-stellar-sdk"
-readme = "README.md"
-keywords = ["substrate", "Stellar"]
+edition = "2018"
 exclude = ["autogenerator/*"]
+keywords = ["substrate", "Stellar"]
+license = "Apache-2.0"
+name = "substrate-stellar-sdk"
+readme = "README.md"
+repository = "https://github.com/pendulum-chain/substrate-stellar-sdk"
+version = "0.2.2"
 
 [dependencies]
-serde_json = { version = '1.0.64', default-features = false, features = ["alloc"], optional = true }
-serde = { version = "1.0.100", default-features = false, features = ["derive", "alloc"], optional = true }
+base64 = {default-features = false, version = "0.13.0"}
 hex = {version = "0.4", default-features = false}
-sp-std = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.17" }
-sp-runtime = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.17", optional = true }
-sp-io = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.17", optional = true }
-sodalite = { version = "0.4.0" }
-sha2 = { default-features = false, version = "0.9.9" }
-lazy_static = { version = "1.4.0", features = ["spin_no_std"] }
-base64 = { default-features = false, version = "0.13.0" }
+lazy_static = {version = "1.4.0", features = ["spin_no_std"]}
 num-rational = {version = "0.4", default-features = false}
-
+serde = {version = "1.0.100", default-features = false, features = ["derive", "alloc"], optional = true}
+serde_json = {version = '1.0.64', default-features = false, features = ["alloc"], optional = true}
+sha2 = {default-features = false, version = "0.9.9"}
+sodalite = {version = "0.4.0"}
+sp-io = {git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.18", optional = true}
+sp-runtime = {git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.18", optional = true}
+sp-std = {git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.18"}
 
 [features]
-default = [ "offchain", "std" ]
 all-types = []
-offchain = [ "sp-runtime", "sp-io", "serde_json", "serde" ]
+default = ["offchain", "std"]
+offchain = ["sp-runtime", "sp-io", "serde_json", "serde"]
 std = [
   "sp-runtime/std",
   "sp-std/std",
@@ -35,5 +34,5 @@ std = [
   "serde_json",
   "serde",
   "hex/std",
-  "num-rational/std"
+  "num-rational/std",
 ]
