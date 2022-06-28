@@ -2,7 +2,7 @@ use crate::{
     compound_types::LimitedString,
     types::{
         LedgerKeyAccount, LedgerKeyClaimableBalance, LedgerKeyData, LedgerKeyLiquidityPool,
-        LedgerKeyOffer, LedgerKeyTrustLine, TrustLineAsset
+        LedgerKeyOffer, LedgerKeyTrustLine, TrustLineAsset,
     },
     IntoAccountId, IntoClaimbleBalanceId, IntoHash, LedgerKey, StellarSdkError,
 };
