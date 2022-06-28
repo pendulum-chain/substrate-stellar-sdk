@@ -1,7 +1,7 @@
 use core::convert::AsRef;
 
 use crate::{
-    types::{AssetAlphaNum12, AssetAlphaNum4},
+    types::{AlphaNum12, AlphaNum4},
     Asset, AssetCode, IntoAccountId, StellarSdkError,
 };
 
@@ -18,13 +18,13 @@ impl Asset {
 
         match asset_code {
             AssetCode::AssetTypeCreditAlphanum4(asset_code) => {
-                Ok(Self::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                Ok(Self::AssetTypeCreditAlphanum4(AlphaNum4 {
                     asset_code,
                     issuer: issuer.into_account_id()?,
                 }))
             }
             AssetCode::AssetTypeCreditAlphanum12(asset_code) => {
-                Ok(Self::AssetTypeCreditAlphanum12(AssetAlphaNum12 {
+                Ok(Self::AssetTypeCreditAlphanum12(AlphaNum12 {
                     asset_code,
                     issuer: issuer.into_account_id()?,
                 }))

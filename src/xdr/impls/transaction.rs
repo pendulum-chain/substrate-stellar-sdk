@@ -3,8 +3,8 @@
 use crate::{
     types::{
         FeeBumpTransactionEnvelope, FeeBumpTransactionExt, FeeBumpTransactionInnerTx, Memo,
-        MuxedAccount, Operation, TimeBounds, Transaction, TransactionEnvelope, TransactionExt,
-        TransactionV0, TransactionV0Ext, TransactionV1Envelope,
+        MuxedAccount, Operation, Preconditions, TimeBounds, Transaction, TransactionEnvelope,
+        TransactionExt, TransactionV0, TransactionV0Ext, TransactionV1Envelope,
     },
     xdr::compound_types::LimitedVarArray,
     FeeBumpTransaction, IntoAmount, IntoMuxedAccountId, StellarSdkError, BASE_FEE_STROOPS,
@@ -17,16 +17,14 @@ impl Transaction {
         source_account: T,
         sequence_number: i64,
         fee_per_operation: Option<u32>,
-        time_bounds: Option<TimeBounds>,
+        preconditions: Preconditions,
         memo: Option<Memo>,
     ) -> Result<Self, StellarSdkError> {
-        let time_bounds = time_bounds.or(Some(TimeBounds::from_time_points((), ())));
-
         let transaction = Self {
             source_account: source_account.into_muxed_account_id()?,
             fee: fee_per_operation.unwrap_or(BASE_FEE_STROOPS),
             seq_num: sequence_number,
-            time_bounds,
+            cond: preconditions,
             memo: memo.unwrap_or(Memo::MemoNone),
             operations: LimitedVarArray::new_empty(),
             ext: TransactionExt::V0,
@@ -55,11 +53,15 @@ impl Transaction {
 
 impl From<TransactionV0> for Transaction {
     fn from(transaction: TransactionV0) -> Self {
+        let time_bounds = transaction
+            .time_bounds
+            .unwrap_or(TimeBounds::from_time_points((), ()));
+
         Self {
             source_account: MuxedAccount::KeyTypeEd25519(transaction.source_account_ed25519),
             fee: transaction.fee,
             seq_num: transaction.seq_num,
-            time_bounds: transaction.time_bounds,
+            cond: Preconditions::PrecondTime(time_bounds),
             memo: transaction.memo,
             operations: transaction.operations,
             ext: match transaction.ext {
@@ -109,8 +111,9 @@ impl FeeBumpTransaction {
 #[cfg(test)]
 mod test {
     use crate::{
-        network::TEST_NETWORK, Asset, IntoSecretKey, Memo, MilliSecondEpochTime, Operation, Price,
-        SecondEpochTime, StroopAmount, TimeBounds, Transaction, TransactionEnvelope, XdrCodec,
+        network::TEST_NETWORK, types::Preconditions, Asset, IntoSecretKey, Memo,
+        MilliSecondEpochTime, Operation, Price, SecondEpochTime, StroopAmount, TimeBounds,
+        Transaction, TransactionEnvelope, XdrCodec,
     };
 
     const ACCOUNT_ID1: &str = "GDGRDTRINPF66FNC47H22NY6BNWMCD5Q4XZTVA2KG7PFZ64WHRIU62TQ";
@@ -126,7 +129,7 @@ mod test {
             ACCOUNT_ID1,
             1980190376853505,
             Some(100),
-            Some(TimeBounds::from_time_points(
+            Preconditions::PrecondTime(TimeBounds::from_time_points(
                 SecondEpochTime(0),
                 SecondEpochTime(1626258131),
             )),
@@ -160,7 +163,7 @@ mod test {
             ACCOUNT_ID1,
             1980190376853505,
             Some(321),
-            Some(TimeBounds::from_time_points(
+            Preconditions::PrecondTime(TimeBounds::from_time_points(
                 SecondEpochTime(0),
                 SecondEpochTime(0),
             )),
@@ -195,7 +198,7 @@ mod test {
             ACCOUNT_ID1,
             1980190376853505,
             Some(321),
-            Some(TimeBounds::from_time_points(
+            Preconditions::PrecondTime(TimeBounds::from_time_points(
                 SecondEpochTime(162620000),
                 MilliSecondEpochTime(1626263454_000),
             )),
