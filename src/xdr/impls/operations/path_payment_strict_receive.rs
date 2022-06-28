@@ -7,11 +7,7 @@ use crate::{
 };
 
 impl Operation {
-    pub fn new_path_payment_strict_receive<
-        S: IntoAmount,
-        U: IntoAmount,
-        V: IntoMuxedAccountId,
-    >(
+    pub fn new_path_payment_strict_receive<S: IntoAmount, U: IntoAmount, V: IntoMuxedAccountId>(
         send_asset: Asset,
         send_max: S,
         destination: V,

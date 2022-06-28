@@ -88,5 +88,5 @@ pub enum StellarSdkError {
     CantWrapFeeBumpTransaction,
 
     #[cfg(feature = "offchain")]
-    FetchError(FetchError)
+    FetchError(FetchError),
 }
