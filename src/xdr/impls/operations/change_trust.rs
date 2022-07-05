@@ -1,10 +1,10 @@
 use crate::{
-    types::{ChangeTrustOp, OperationBody},
-    Asset, IntoAmount, Operation, StellarSdkError,
+    types::{ChangeTrustAsset, ChangeTrustOp, OperationBody},
+    IntoAmount, Operation, StellarSdkError,
 };
 
 impl Operation {
-    pub fn new_change_trust(line: Asset) -> Result<Operation, StellarSdkError> {
+    pub fn new_change_trust(line: ChangeTrustAsset) -> Result<Operation, StellarSdkError> {
         Ok(Operation {
             source_account: None,
             body: OperationBody::ChangeTrust(ChangeTrustOp {
@@ -15,7 +15,7 @@ impl Operation {
     }
 
     pub fn new_change_trust_with_limit<T: IntoAmount>(
-        line: Asset,
+        line: ChangeTrustAsset,
         limit: T,
     ) -> Result<Operation, StellarSdkError> {
         Ok(Operation {

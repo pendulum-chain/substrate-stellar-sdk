@@ -2,9 +2,9 @@ use crate::{
     compound_types::LimitedString,
     types::{
         LedgerKeyAccount, LedgerKeyClaimableBalance, LedgerKeyData, LedgerKeyLiquidityPool,
-        LedgerKeyOffer, LedgerKeyTrustLine,
+        LedgerKeyOffer, LedgerKeyTrustLine, TrustLineAsset,
     },
-    Asset, IntoAccountId, IntoClaimbleBalanceId, IntoHash, LedgerKey, StellarSdkError,
+    IntoAccountId, IntoClaimbleBalanceId, IntoHash, LedgerKey, StellarSdkError,
 };
 
 impl LedgerKey {
@@ -15,7 +15,7 @@ impl LedgerKey {
 
     pub fn from_trustline<T: IntoAccountId>(
         account_id: T,
-        asset: Asset,
+        asset: TrustLineAsset,
     ) -> Result<Self, StellarSdkError> {
         let account_id = account_id.into_account_id()?;
         Ok(Self::Trustline(LedgerKeyTrustLine { account_id, asset }))
