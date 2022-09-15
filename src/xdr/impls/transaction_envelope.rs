@@ -114,7 +114,7 @@ impl TransactionEnvelope {
         Ok(())
     }
 
-    fn get_hash(&self, network: &Network) -> BinarySha256Hash {
+    pub fn get_hash(&self, network: &Network) -> BinarySha256Hash {
         let network_id = network.get_id().clone();
 
         let tagged_transaction = match self {
