@@ -151,9 +151,9 @@ mod tests {
 
     use crate::{
         types::{
-            Asset, AssetAlphaNum4, ManageSellOfferOp, Memo, MuxedAccount, Operation, OperationBody,
-            PaymentOp, Price, PublicKey, TimeBounds, Transaction, TransactionEnvelope,
-            TransactionExt, TransactionMeta, TransactionV1Envelope, Uint256,
+            AlphaNum4, Asset, ManageSellOfferOp, Memo, MuxedAccount, Operation, OperationBody,
+            PaymentOp, Preconditions, Price, PublicKey, TimeBounds, Transaction,
+            TransactionEnvelope, TransactionExt, TransactionMeta, TransactionV1Envelope, Uint256,
         },
         xdr::compound_types::LimitedVarArray,
         XdrCodec,
@@ -269,7 +269,7 @@ mod tests {
             )),
             fee: 1500,
             seq_num: 153882209995006140,
-            time_bounds: Some(TimeBounds {
+            cond: Preconditions::PrecondTime(TimeBounds {
                 min_time: 0,
                 max_time: 0,
             }),
@@ -278,13 +278,13 @@ mod tests {
                 Operation {
                     source_account: None,
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
-                        selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        selling: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"USDT".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
                             )),
                         }),
-                        buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        buying: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"LTC\0".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
@@ -301,13 +301,13 @@ mod tests {
                 Operation {
                     source_account: None,
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
-                        selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        selling: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"USDT".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
                             )),
                         }),
-                        buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        buying: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"LTC\0".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
@@ -324,13 +324,13 @@ mod tests {
                 Operation {
                     source_account: None,
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
-                        selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        selling: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"USDT".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
                             )),
                         }),
-                        buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        buying: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"LTC\0".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
@@ -347,13 +347,13 @@ mod tests {
                 Operation {
                     source_account: None,
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
-                        selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        selling: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"USDT".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
                             )),
                         }),
-                        buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        buying: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"LTC\0".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
@@ -370,13 +370,13 @@ mod tests {
                 Operation {
                     source_account: None,
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
-                        selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        selling: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"USDT".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
                             )),
                         }),
-                        buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        buying: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"LTC\0".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
@@ -393,13 +393,13 @@ mod tests {
                 Operation {
                     source_account: None,
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
-                        selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        selling: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"LTC\0".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
                             )),
                         }),
-                        buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        buying: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"USDT".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
@@ -413,13 +413,13 @@ mod tests {
                 Operation {
                     source_account: None,
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
-                        selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        selling: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"LTC\0".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
                             )),
                         }),
-                        buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        buying: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"USDT".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
@@ -433,13 +433,13 @@ mod tests {
                 Operation {
                     source_account: None,
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
-                        selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        selling: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"LTC\0".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
                             )),
                         }),
-                        buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        buying: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"USDT".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
@@ -453,13 +453,13 @@ mod tests {
                 Operation {
                     source_account: None,
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
-                        selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        selling: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"LTC\0".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
                             )),
                         }),
-                        buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        buying: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"USDT".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
@@ -473,13 +473,13 @@ mod tests {
                 Operation {
                     source_account: None,
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
-                        selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        selling: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"LTC\0".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
                             )),
                         }),
-                        buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        buying: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"USDT".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
@@ -493,13 +493,13 @@ mod tests {
                 Operation {
                     source_account: None,
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
-                        selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        selling: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"LTC\0".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
                             )),
                         }),
-                        buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        buying: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"USDT".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
@@ -513,13 +513,13 @@ mod tests {
                 Operation {
                     source_account: None,
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
-                        selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        selling: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"LTC\0".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
                             )),
                         }),
-                        buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        buying: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"USDT".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
@@ -533,13 +533,13 @@ mod tests {
                 Operation {
                     source_account: None,
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
-                        selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        selling: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"LTC\0".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
                             )),
                         }),
-                        buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        buying: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"USDT".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
@@ -553,13 +553,13 @@ mod tests {
                 Operation {
                     source_account: None,
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
-                        selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        selling: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"LTC\0".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
                             )),
                         }),
-                        buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        buying: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"USDT".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
@@ -573,13 +573,13 @@ mod tests {
                 Operation {
                     source_account: None,
                     body: OperationBody::ManageSellOffer(ManageSellOfferOp {
-                        selling: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        selling: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"LTC\0".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GC5LOR3BK6KIOK7GKAUD5EGHQCMFOGHJTC7I3ELB66PTDFXORC2VM5LP",
                             )),
                         }),
-                        buying: Asset::AssetTypeCreditAlphanum4(AssetAlphaNum4 {
+                        buying: Asset::AssetTypeCreditAlphanum4(AlphaNum4 {
                             asset_code: b"USDT".clone(),
                             issuer: PublicKey::PublicKeyTypeEd25519(binary_public(
                                 "GCQTGZQQ5G4PTM2GL7CDIFKUBIPEC52BROAQIAPW53XBRJVN6ZJVTG6V",
@@ -616,7 +616,7 @@ mod tests {
                 ),
                 fee: 10000,
                 seq_num: 59481002082305,
-                time_bounds: Some(TimeBounds {
+                cond: Preconditions::PrecondTime(TimeBounds {
                     min_time: 0,
                     max_time: 0,
                 }),
