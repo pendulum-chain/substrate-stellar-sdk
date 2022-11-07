@@ -287,14 +287,6 @@ impl<T: XdrCodec> XdrCodec for XdrArchive<T> {
 
             result.push(T::from_xdr_buffered(read_stream)?);
 
-            println!(
-                "{}, {}, {}, {}",
-                result.len(),
-                old_position,
-                read_stream.get_position(),
-                length
-            );
-
             if read_stream.get_position() - old_position != length as usize {
                 return Err(DecodeError::InvalidXdrArchiveLength {
                     at_position: old_position,
