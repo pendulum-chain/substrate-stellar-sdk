@@ -2,6 +2,8 @@
 
 The code in this directory generates a Rust decoder and encoder of all XDR types used in Stellar. It generates the code in the file `src/xdr/types.rs`
 
+The code in this folder is derived from https://github.com/stellar/js-xdr 
+
 # How to use
 
 ## Requirements
