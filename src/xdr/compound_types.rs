@@ -232,3 +232,52 @@ impl<T: XdrCodec, const N: i32> XdrCodec for LimitedVarArray<T, N> {
 /// `i32::MAX` characters.
 #[allow(dead_code)]
 pub type UnlimitedVarArray<T> = LimitedVarArray<T, { i32::MAX }>;
+
+pub struct XdrStream<T>(Vec<T>);
+
+impl<T: XdrCodec> XdrCodec for XdrStream<T> {
+    /// The XDR encoder implementation for `LimitedString`
+    fn to_xdr_buffered(&self, _write_stream: &mut WriteStream) {}
+
+    /// The XDR decoder implementation for `LimitedString`
+    fn from_xdr_buffered<R: AsRef<[u8]>>(
+        read_stream: &mut ReadStream<R>,
+    ) -> Result<Self, DecodeError> {
+        if read_stream.no_of_bytes_left_to_read() == 0 {
+            return Ok(XdrStream(vec![]));
+        }
+
+        let mut result = Vec::<T>::new();
+        loop {
+            let length = read_stream.read_next_u32()?;
+            let continuation_bit = length & 0x80_00_00_00 == 0x80_00_00_00;
+            let length = length & 0x7f_ff_ff_ff;
+
+            let old_position = read_stream.get_position();
+
+            result.push(T::from_xdr_buffered(read_stream)?);
+
+            if read_stream.get_position() - old_position != length as usize {
+                return Err(DecodeError::InvalidXdrStreamLength {
+                    at_position: old_position,
+                });
+            }
+
+            if continuation_bit {
+                break;
+            }
+        }
+
+        Ok(XdrStream(result))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::types::{SCPHistoryEntry, XdrStream};
+
+    #[test]
+    fn keypair() {
+        //        decode_file =
+    }
+}

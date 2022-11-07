@@ -6,7 +6,7 @@
 #[allow(unused_imports)]
 use super::compound_types::{
     LimitedString, LimitedVarArray, LimitedVarOpaque, UnlimitedString, UnlimitedVarArray,
-    UnlimitedVarOpaque,
+    UnlimitedVarOpaque, XdrStream,
 };
 #[allow(unused_imports)]
 use super::streams::{DecodeError, ReadStream, WriteStream};

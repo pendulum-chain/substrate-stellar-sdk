@@ -26,7 +26,9 @@ pub enum DecodeError {
     ///
     /// The XDR is self delimiting and would end earlier than the length of the provided
     /// binary data. The number of remaining bytes is given by `remaining_no_of_bytes`
-    TypeEndsTooEarly { remaining_no_of_bytes: isize },
+    TypeEndsTooEarly {
+        remaining_no_of_bytes: isize,
+    },
 
     /// The XDR contains an invalid boolean
     ///
@@ -60,15 +62,25 @@ pub enum DecodeError {
     /// The XDR contains an in invalid "Optional"
     ///
     /// The "optional" is neither encoded as 0 or 1. The value found is given by `has_code`.
-    InvalidOptional { at_position: usize, has_code: u32 },
+    InvalidOptional {
+        at_position: usize,
+        has_code: u32,
+    },
 
     /// The XDR contains an enum with an invalid discriminator
     ///
     /// The discriminator does not have one of the allowed values
-    InvalidEnumDiscriminator { at_position: usize },
+    InvalidEnumDiscriminator {
+        at_position: usize,
+    },
 
     /// The base64 encoding of the binary XDR is invalid
     InvalidBase64,
+
+    // there is an invalid length encoding in an XDR stream
+    InvalidXdrStreamLength {
+        at_position: usize,
+    },
 }
 
 /// An helper structure for efficiently decoding XDR data
