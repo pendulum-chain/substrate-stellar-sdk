@@ -3,8 +3,10 @@
 use core::convert::AsRef;
 use sp_std::{vec, vec::Vec};
 
-use super::streams::{DecodeError, ReadStream, WriteStream};
-use super::xdr_codec::XdrCodec;
+use super::{
+    streams::{DecodeError, ReadStream, WriteStream},
+    xdr_codec::XdrCodec,
+};
 use crate::StellarSdkError;
 
 /// Type for binary data whose length is not predefined but bounded by a constant
@@ -22,10 +24,7 @@ impl<const N: i32> LimitedVarOpaque<N> {
     /// an error.
     pub fn new(vec: Vec<u8>) -> Result<Self, StellarSdkError> {
         match vec.len() > N as usize {
-            true => Err(StellarSdkError::ExceedsMaximumLength {
-                requested_length: vec.len(),
-                allowed_length: N,
-            }),
+            true => Err(StellarSdkError::ExceedsMaximumLength { requested_length: vec.len(), allowed_length: N }),
             false => Ok(LimitedVarOpaque(vec)),
         }
     }
@@ -52,9 +51,7 @@ impl<const N: i32> XdrCodec for LimitedVarOpaque<N> {
     }
 
     /// The XDR decoder implementation for `LimitedVarOpaque`
-    fn from_xdr_buffered<R: AsRef<[u8]>>(
-        read_stream: &mut ReadStream<R>,
-    ) -> Result<Self, DecodeError> {
+    fn from_xdr_buffered<R: AsRef<[u8]>>(read_stream: &mut ReadStream<R>) -> Result<Self, DecodeError> {
         let length = read_stream.read_next_u32()? as i32;
         match length > N {
             true => Err(DecodeError::VarOpaqueExceedsMaxLength {
@@ -62,9 +59,7 @@ impl<const N: i32> XdrCodec for LimitedVarOpaque<N> {
                 max_length: N,
                 actual_length: length,
             }),
-            false => Ok(
-                LimitedVarOpaque::new(read_stream.read_next_binary_data(length as usize)?).unwrap(),
-            ),
+            false => Ok(LimitedVarOpaque::new(read_stream.read_next_binary_data(length as usize)?).unwrap()),
         }
     }
 }
@@ -92,10 +87,7 @@ impl<const N: i32> LimitedString<N> {
     /// an error
     pub fn new(vec: Vec<u8>) -> Result<Self, StellarSdkError> {
         match vec.len() > N as usize {
-            true => Err(StellarSdkError::ExceedsMaximumLength {
-                requested_length: vec.len(),
-                allowed_length: N,
-            }),
+            true => Err(StellarSdkError::ExceedsMaximumLength { requested_length: vec.len(), allowed_length: N }),
             false => Ok(LimitedString(vec)),
         }
     }
@@ -118,9 +110,7 @@ impl<const N: i32> XdrCodec for LimitedString<N> {
     }
 
     /// The XDR decoder implementation for `LimitedString`
-    fn from_xdr_buffered<R: AsRef<[u8]>>(
-        read_stream: &mut ReadStream<R>,
-    ) -> Result<Self, DecodeError> {
+    fn from_xdr_buffered<R: AsRef<[u8]>>(read_stream: &mut ReadStream<R>) -> Result<Self, DecodeError> {
         let length = read_stream.read_next_u32()? as i32;
         match length > N {
             true => Err(DecodeError::StringExceedsMaxLength {
@@ -128,9 +118,7 @@ impl<const N: i32> XdrCodec for LimitedString<N> {
                 max_length: N,
                 actual_length: length,
             }),
-            false => Ok(
-                LimitedString::new(read_stream.read_next_binary_data(length as usize)?).unwrap(),
-            ),
+            false => Ok(LimitedString::new(read_stream.read_next_binary_data(length as usize)?).unwrap()),
         }
     }
 }
@@ -158,10 +146,7 @@ impl<T, const N: i32> LimitedVarArray<T, N> {
     /// an error
     pub fn new(vec: Vec<T>) -> Result<Self, StellarSdkError> {
         match vec.len() > N as usize {
-            true => Err(StellarSdkError::ExceedsMaximumLength {
-                requested_length: vec.len(),
-                allowed_length: N,
-            }),
+            true => Err(StellarSdkError::ExceedsMaximumLength { requested_length: vec.len(), allowed_length: N }),
             false => Ok(LimitedVarArray(vec)),
         }
     }
@@ -184,10 +169,7 @@ impl<T, const N: i32> LimitedVarArray<T, N> {
     /// Return an `Err` if the array already has the maximal number of elements.
     pub fn push(&mut self, item: T) -> Result<(), StellarSdkError> {
         if self.0.len() >= N as usize - 1 {
-            return Err(StellarSdkError::ExceedsMaximumLength {
-                requested_length: self.0.len() + 1,
-                allowed_length: N,
-            });
+            return Err(StellarSdkError::ExceedsMaximumLength { requested_length: self.0.len() + 1, allowed_length: N })
         }
 
         self.0.push(item);
@@ -205,9 +187,7 @@ impl<T: XdrCodec, const N: i32> XdrCodec for LimitedVarArray<T, N> {
     }
 
     /// The XDR decoder implementation for `LimitedVarArray`
-    fn from_xdr_buffered<R: AsRef<[u8]>>(
-        read_stream: &mut ReadStream<R>,
-    ) -> Result<Self, DecodeError> {
+    fn from_xdr_buffered<R: AsRef<[u8]>>(read_stream: &mut ReadStream<R>) -> Result<Self, DecodeError> {
         let length = read_stream.read_next_u32()? as i32;
         match length > N {
             true => Err(DecodeError::VarArrayExceedsMaxLength {
@@ -221,7 +201,7 @@ impl<T: XdrCodec, const N: i32> XdrCodec for LimitedVarArray<T, N> {
                     result.push(T::from_xdr_buffered(read_stream)?)
                 }
                 Ok(LimitedVarArray::new(result).unwrap())
-            }
+            },
         }
     }
 }
@@ -263,7 +243,7 @@ impl<T> XdrArchive<T> {
 }
 
 impl<T: XdrCodec> XdrCodec for XdrArchive<T> {
-    /// The XDR encoder implementation for `LimitedString`
+    /// The XDR encoder implementation for `XdrArchive`
     fn to_xdr_buffered(&self, write_stream: &mut WriteStream) {
         for item in self.0.iter() {
             let item_xdr = item.to_xdr();
@@ -275,10 +255,8 @@ impl<T: XdrCodec> XdrCodec for XdrArchive<T> {
         }
     }
 
-    /// The XDR decoder implementation for `LimitedString`
-    fn from_xdr_buffered<R: AsRef<[u8]>>(
-        read_stream: &mut ReadStream<R>,
-    ) -> Result<Self, DecodeError> {
+    /// The XDR decoder implementation for `XdrArchive`
+    fn from_xdr_buffered<R: AsRef<[u8]>>(read_stream: &mut ReadStream<R>) -> Result<Self, DecodeError> {
         let mut result = Vec::<T>::new();
         while read_stream.no_of_bytes_left_to_read() > 0 {
             let length = read_stream.read_next_u32()? & 0x7f_ff_ff_ff;
@@ -287,9 +265,7 @@ impl<T: XdrCodec> XdrCodec for XdrArchive<T> {
             result.push(T::from_xdr_buffered(read_stream)?);
 
             if read_stream.get_position() - old_position != length as usize {
-                return Err(DecodeError::InvalidXdrArchiveLength {
-                    at_position: old_position,
-                });
+                return Err(DecodeError::InvalidXdrArchiveLength { at_position: old_position })
             }
         }
 
@@ -313,13 +289,10 @@ mod tests {
         assert_eq!(
             encoded,
             vec![
-                128, 0, 0, 20, 0, 0, 0, 2, 0, 0, 0, 10, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 4, 128, 0,
-                0, 12, 0, 0, 0, 1, 0, 0, 0, 5, 0, 0, 0, 2
+                128, 0, 0, 20, 0, 0, 0, 2, 0, 0, 0, 10, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 4, 128, 0, 0, 12, 0, 0, 0, 1,
+                0, 0, 0, 5, 0, 0, 0, 2
             ]
         );
-        assert_eq!(
-            XdrArchive::<LimitedVarArray<Price, 10>>::from_xdr(encoded).unwrap(),
-            xdr_archive
-        )
+        assert_eq!(XdrArchive::<LimitedVarArray<Price, 10>>::from_xdr(encoded).unwrap(), xdr_archive)
     }
 }

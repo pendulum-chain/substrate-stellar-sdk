@@ -8,7 +8,7 @@
     "download-x": "cd x2JavaScript && ./generate && cd ..",
     "generate": "npm run generate-all-types && npm run format",
     "generate-all-types": "DESTINATION=../src/xdr MAIN_FILE_NAME=types.rs npx ts-node x2JavaScript/generated/stellar-xdr_generated.ts",
-    "format": "cargo fmt -- ../src/xdr/types.rs",
+    "format": "rustfmt ../src/xdr/types.rs",
     "build": "npm run download-x && npm run generate"
   },
   "author": "SatoshiPay Ltd",
