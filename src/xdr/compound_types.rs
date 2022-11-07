@@ -233,51 +233,102 @@ impl<T: XdrCodec, const N: i32> XdrCodec for LimitedVarArray<T, N> {
 #[allow(dead_code)]
 pub type UnlimitedVarArray<T> = LimitedVarArray<T, { i32::MAX }>;
 
-pub struct XdrStream<T>(Vec<T>);
+#[allow(dead_code)]
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct XdrArchive<T>(Vec<T>);
 
-impl<T: XdrCodec> XdrCodec for XdrStream<T> {
+impl<T> XdrArchive<T> {
+    /// Construct a new `XdrArchive` from a vector
+    pub fn new(vec: Vec<T>) -> Self {
+        XdrArchive(vec)
+    }
+
+    pub fn new_empty() -> Self {
+        XdrArchive(vec![])
+    }
+
+    /// Returns a reference to the byte vector
+    pub fn get_vec(&self) -> &Vec<T> {
+        &self.0
+    }
+
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    /// Add an element to the byte vector
+    pub fn push(&mut self, item: T) -> () {
+        self.0.push(item);
+    }
+}
+
+impl<T: XdrCodec> XdrCodec for XdrArchive<T> {
     /// The XDR encoder implementation for `LimitedString`
-    fn to_xdr_buffered(&self, _write_stream: &mut WriteStream) {}
+    fn to_xdr_buffered(&self, write_stream: &mut WriteStream) {
+        for item in self.0.iter() {
+            let item_xdr = item.to_xdr();
+            let length = item_xdr.len();
+            if length < 0x80_00_00_00 {
+                write_stream.write_next_u32((length as u32) | 0x80_00_00_00);
+                write_stream.write_next_binary_data(&item_xdr);
+            }
+        }
+    }
 
     /// The XDR decoder implementation for `LimitedString`
     fn from_xdr_buffered<R: AsRef<[u8]>>(
         read_stream: &mut ReadStream<R>,
     ) -> Result<Self, DecodeError> {
-        if read_stream.no_of_bytes_left_to_read() == 0 {
-            return Ok(XdrStream(vec![]));
-        }
-
         let mut result = Vec::<T>::new();
-        loop {
-            let length = read_stream.read_next_u32()?;
-            let continuation_bit = length & 0x80_00_00_00 == 0x80_00_00_00;
-            let length = length & 0x7f_ff_ff_ff;
+        while read_stream.no_of_bytes_left_to_read() > 0 {
+            let length = read_stream.read_next_u32()? & 0x7f_ff_ff_ff;
 
             let old_position = read_stream.get_position();
 
             result.push(T::from_xdr_buffered(read_stream)?);
 
+            println!(
+                "{}, {}, {}, {}",
+                result.len(),
+                old_position,
+                read_stream.get_position(),
+                length
+            );
+
             if read_stream.get_position() - old_position != length as usize {
-                return Err(DecodeError::InvalidXdrStreamLength {
+                return Err(DecodeError::InvalidXdrArchiveLength {
                     at_position: old_position,
                 });
             }
-
-            if continuation_bit {
-                break;
-            }
         }
 
-        Ok(XdrStream(result))
+        Ok(XdrArchive(result))
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::types::{SCPHistoryEntry, XdrStream};
+    use super::*;
+    use crate::Price;
 
     #[test]
     fn keypair() {
-        //        decode_file =
+        let xdr_archive = XdrArchive::<LimitedVarArray<Price, 10>>::new(vec![
+            LimitedVarArray::new(vec![Price { n: 10, d: 3 }, Price { n: 1, d: 4 }]).unwrap(),
+            LimitedVarArray::new(vec![Price { n: 5, d: 2 }]).unwrap(),
+        ]);
+
+        let encoded = xdr_archive.to_xdr();
+        assert_eq!(
+            encoded,
+            vec![
+                128, 0, 0, 20, 0, 0, 0, 2, 0, 0, 0, 10, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 4, 128, 0,
+                0, 12, 0, 0, 0, 1, 0, 0, 0, 5, 0, 0, 0, 2
+            ]
+        );
+        assert_eq!(
+            XdrArchive::<LimitedVarArray<Price, 10>>::from_xdr(encoded).unwrap(),
+            xdr_archive
+        )
     }
 }

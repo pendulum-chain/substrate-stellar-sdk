@@ -78,7 +78,7 @@ pub enum DecodeError {
     InvalidBase64,
 
     // there is an invalid length encoding in an XDR stream
-    InvalidXdrStreamLength {
+    InvalidXdrArchiveLength {
         at_position: usize,
     },
 }
