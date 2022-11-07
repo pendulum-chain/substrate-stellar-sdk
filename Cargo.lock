@@ -1961,7 +1961,7 @@ dependencies = [
 
 [[package]]
 name = "substrate-stellar-sdk"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "base64",
  "hex",

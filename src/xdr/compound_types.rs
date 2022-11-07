@@ -282,7 +282,6 @@ impl<T: XdrCodec> XdrCodec for XdrArchive<T> {
         let mut result = Vec::<T>::new();
         while read_stream.no_of_bytes_left_to_read() > 0 {
             let length = read_stream.read_next_u32()? & 0x7f_ff_ff_ff;
-
             let old_position = read_stream.get_position();
 
             result.push(T::from_xdr_buffered(read_stream)?);
@@ -294,7 +293,7 @@ impl<T: XdrCodec> XdrCodec for XdrArchive<T> {
             }
         }
 
-        Ok(XdrArchive(result))
+        Ok(XdrArchive::new(result))
     }
 }
 
