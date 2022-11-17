@@ -14,9 +14,9 @@ exclude = ["autogenerator/*"]
 serde_json = { version = '1.0.64', default-features = false, features = ["alloc"], optional = true }
 serde = { version = "1.0.100", default-features = false, features = ["derive", "alloc"], optional = true }
 hex = { version = "0.4", default-features = false}
-sp-std = { version = "4.0.0", git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.29" }
-sp-runtime = { version = "6.0.0", git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.29", optional = true }
-sp-io = { version = "6.0.0", git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.29", optional = true }
+sp-std = { version = "4.0.0", git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.31" }
+sp-runtime = { version = "6.0.0", git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.31", optional = true }
+sp-io = { version = "6.0.0", git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.31", optional = true }
 sodalite = { version = "0.4.0" }
 sha2 = { default-features = false, version = "0.9.9" }
 lazy_static = { version = "1.4.0", features = ["spin_no_std"] }
