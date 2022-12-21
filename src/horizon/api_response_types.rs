@@ -31,9 +31,7 @@ pub struct FeeDistribution {
 impl TryFrom<json_response_types::FeeDistribution> for FeeDistribution {
     type Error = FetchError;
 
-    fn try_from(
-        fee_distribution: json_response_types::FeeDistribution,
-    ) -> Result<Self, Self::Error> {
+    fn try_from(fee_distribution: json_response_types::FeeDistribution) -> Result<Self, Self::Error> {
         Ok(FeeDistribution {
             max: fee_distribution.max.parse()?,
             min: fee_distribution.min.parse()?,

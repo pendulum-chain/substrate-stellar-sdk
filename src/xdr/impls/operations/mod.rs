@@ -24,10 +24,7 @@ pub mod set_options;
 pub mod set_trust_line_flags;
 
 impl Operation {
-    pub fn set_source_account<T: IntoMuxedAccountId>(
-        mut self,
-        source_account: T,
-    ) -> Result<Self, StellarSdkError> {
+    pub fn set_source_account<T: IntoMuxedAccountId>(mut self, source_account: T) -> Result<Self, StellarSdkError> {
         self.source_account = Some(source_account.into_muxed_account_id()?);
         Ok(self)
     }

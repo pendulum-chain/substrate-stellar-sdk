@@ -49,11 +49,7 @@ impl TransactionEnvelope {
     /// Generate and add signatures to the `transaction_envelope`. The signature
     /// is generated for a network having the passphrase contained in `network`. Generate and add
     /// one signature for each keypair in `keypairs`.
-    pub fn sign(
-        &mut self,
-        network: &Network,
-        keypairs: Vec<&SecretKey>,
-    ) -> Result<(), StellarSdkError> {
+    pub fn sign(&mut self, network: &Network, keypairs: Vec<&SecretKey>) -> Result<(), StellarSdkError> {
         let transaction_hash = self.get_hash(network);
 
         let signatures = self.get_signatures();
@@ -63,10 +59,7 @@ impl TransactionEnvelope {
             let hint = keypair.get_public().get_signature_hint();
 
             signatures
-                .push(DecoratedSignature {
-                    hint,
-                    signature: LimitedVarOpaque::new(Vec::from(signature)).unwrap(),
-                })
+                .push(DecoratedSignature { hint, signature: LimitedVarOpaque::new(Vec::from(signature)).unwrap() })
                 .map_err(|_| StellarSdkError::TooManySignatures)?;
         }
 
@@ -91,15 +84,15 @@ impl TransactionEnvelope {
                     return Err(StellarSdkError::InvalidSignatureLength {
                         found_length: signature.len(),
                         expected_length: SIGN_LEN,
-                    });
+                    })
                 };
                 signature
-            }
+            },
         };
 
         let transaction_hash = self.get_hash(network);
         if !public_key.verify_signature(transaction_hash, signature[..].try_into().unwrap()) {
-            return Err(StellarSdkError::PublicKeyCantVerify);
+            return Err(StellarSdkError::PublicKeyCantVerify)
         }
 
         let signatures = self.get_signatures();
@@ -121,25 +114,18 @@ impl TransactionEnvelope {
             TransactionEnvelope::EnvelopeTypeTxV0(envelope) => {
                 let transaction = envelope.tx.clone().into();
                 TransactionSignaturePayloadTaggedTransaction::EnvelopeTypeTx(transaction)
-            }
+            },
 
-            TransactionEnvelope::EnvelopeTypeTx(envelope) => {
-                TransactionSignaturePayloadTaggedTransaction::EnvelopeTypeTx(envelope.tx.clone())
-            }
+            TransactionEnvelope::EnvelopeTypeTx(envelope) =>
+                TransactionSignaturePayloadTaggedTransaction::EnvelopeTypeTx(envelope.tx.clone()),
 
-            TransactionEnvelope::EnvelopeTypeTxFeeBump(envelope) => {
-                TransactionSignaturePayloadTaggedTransaction::EnvelopeTypeTxFeeBump(
-                    envelope.tx.clone(),
-                )
-            }
+            TransactionEnvelope::EnvelopeTypeTxFeeBump(envelope) =>
+                TransactionSignaturePayloadTaggedTransaction::EnvelopeTypeTxFeeBump(envelope.tx.clone()),
 
             _ => unimplemented!("This type of transaction envelope is not supported"),
         };
 
-        let signature_payload = TransactionSignaturePayload {
-            network_id,
-            tagged_transaction,
-        };
+        let signature_payload = TransactionSignaturePayload { network_id, tagged_transaction };
 
         sha256(signature_payload.to_xdr())
     }
@@ -151,9 +137,9 @@ mod tests {
 
     use crate::{
         types::{
-            AlphaNum4, Asset, ManageSellOfferOp, Memo, MuxedAccount, Operation, OperationBody,
-            PaymentOp, Preconditions, Price, PublicKey, TimeBounds, Transaction,
-            TransactionEnvelope, TransactionExt, TransactionMeta, TransactionV1Envelope, Uint256,
+            AlphaNum4, Asset, ManageSellOfferOp, Memo, MuxedAccount, Operation, OperationBody, PaymentOp,
+            Preconditions, Price, PublicKey, TimeBounds, Transaction, TransactionEnvelope, TransactionExt,
+            TransactionMeta, TransactionV1Envelope, Uint256,
         },
         xdr::compound_types::LimitedVarArray,
         XdrCodec,
@@ -269,10 +255,7 @@ mod tests {
             )),
             fee: 1500,
             seq_num: 153882209995006140,
-            cond: Preconditions::PrecondTime(TimeBounds {
-                min_time: 0,
-                max_time: 0,
-            }),
+            cond: Preconditions::PrecondTime(TimeBounds { min_time: 0, max_time: 0 }),
             memo: Memo::MemoNone,
             operations: LimitedVarArray::new(vec![
                 Operation {
@@ -291,10 +274,7 @@ mod tests {
                             )),
                         }),
                         amount: 1964075700,
-                        price: Price {
-                            n: 12751,
-                            d: 2000000,
-                        },
+                        price: Price { n: 12751, d: 2000000 },
                         offer_id: 643129013,
                     }),
                 },
@@ -314,10 +294,7 @@ mod tests {
                             )),
                         }),
                         amount: 2352600000,
-                        price: Price {
-                            n: 63759,
-                            d: 10000000,
-                        },
+                        price: Price { n: 63759, d: 10000000 },
                         offer_id: 643590537,
                     }),
                 },
@@ -337,10 +314,7 @@ mod tests {
                             )),
                         }),
                         amount: 2352450000,
-                        price: Price {
-                            n: 63763,
-                            d: 10000000,
-                        },
+                        price: Price { n: 63763, d: 10000000 },
                         offer_id: 643718766,
                     }),
                 },
@@ -360,10 +334,7 @@ mod tests {
                             )),
                         }),
                         amount: 2352300000,
-                        price: Price {
-                            n: 63767,
-                            d: 10000000,
-                        },
+                        price: Price { n: 63767, d: 10000000 },
                         offer_id: 644253601,
                     }),
                 },
@@ -383,10 +354,7 @@ mod tests {
                             )),
                         }),
                         amount: 2352150000,
-                        price: Price {
-                            n: 63771,
-                            d: 10000000,
-                        },
+                        price: Price { n: 63771, d: 10000000 },
                         offer_id: 644960245,
                     }),
                 },
@@ -605,21 +573,14 @@ mod tests {
         assert!(keypair.is_ok());
         let keypair = keypair.unwrap();
 
-        let dest_public =
-            PublicKey::from_encoding("GDMTKCJQ322RDTGOBLIPVEUCO3EIEJLXDV4JTWLXU6AFOYTMSJ45WZY5")
-                .unwrap();
+        let dest_public = PublicKey::from_encoding("GDMTKCJQ322RDTGOBLIPVEUCO3EIEJLXDV4JTWLXU6AFOYTMSJ45WZY5").unwrap();
 
         let mut transaction_envelope = TransactionEnvelope::EnvelopeTypeTx(TransactionV1Envelope {
             tx: Transaction {
-                source_account: MuxedAccount::KeyTypeEd25519(
-                    keypair.get_public().clone().into_binary(),
-                ),
+                source_account: MuxedAccount::KeyTypeEd25519(keypair.get_public().clone().into_binary()),
                 fee: 10000,
                 seq_num: 59481002082305,
-                cond: Preconditions::PrecondTime(TimeBounds {
-                    min_time: 0,
-                    max_time: 0,
-                }),
+                cond: Preconditions::PrecondTime(TimeBounds { min_time: 0, max_time: 0 }),
                 memo: Memo::MemoNone,
                 operations: LimitedVarArray::new(vec![Operation {
                     source_account: None,
@@ -639,10 +600,7 @@ mod tests {
         5BnlL9yXAMBTaJbnUcQAAJxAAADYZAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAA\
         AAAAAAAAAAAEAAAAAAAAAAQAAAADZNQkw3rURzM4K0PqSgnbIgiV3HXiZ2Xe\
         ngFdibJJ52wAAAAAAAAAAAJiWgAAAAAAAAAAA";
-        assert_eq!(
-            transaction_envelope.to_base64_xdr().as_slice(),
-            &expected_xdr[..]
-        );
+        assert_eq!(transaction_envelope.to_base64_xdr().as_slice(), &expected_xdr[..]);
 
         let signing_result = transaction_envelope.sign(&TEST_NETWORK, vec![&keypair]);
         assert!(signing_result.is_ok());
@@ -654,9 +612,6 @@ mod tests {
         CLQxbuE/zeBYq5Q/17d1hvcQME5uHUJ9SE8L8E/PQHa00jfGpFrtsG+XQV0\
         DI0AnnqQhBhHKl1l5LNpIoxIA";
 
-        assert_eq!(
-            transaction_envelope.to_base64_xdr().as_slice(),
-            &expected_signed_xdr[..]
-        );
+        assert_eq!(transaction_envelope.to_base64_xdr().as_slice(), &expected_signed_xdr[..]);
     }
 }

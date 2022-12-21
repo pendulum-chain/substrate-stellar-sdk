@@ -17,18 +17,10 @@ impl Asset {
         let asset_code = AssetCode::new(asset_code)?;
 
         match asset_code {
-            AssetCode::AssetTypeCreditAlphanum4(asset_code) => {
-                Ok(Self::AssetTypeCreditAlphanum4(AlphaNum4 {
-                    asset_code,
-                    issuer: issuer.into_account_id()?,
-                }))
-            }
-            AssetCode::AssetTypeCreditAlphanum12(asset_code) => {
-                Ok(Self::AssetTypeCreditAlphanum12(AlphaNum12 {
-                    asset_code,
-                    issuer: issuer.into_account_id()?,
-                }))
-            }
+            AssetCode::AssetTypeCreditAlphanum4(asset_code) =>
+                Ok(Self::AssetTypeCreditAlphanum4(AlphaNum4 { asset_code, issuer: issuer.into_account_id()? })),
+            AssetCode::AssetTypeCreditAlphanum12(asset_code) =>
+                Ok(Self::AssetTypeCreditAlphanum12(AlphaNum12 { asset_code, issuer: issuer.into_account_id()? })),
             AssetCode::Default(_) => unreachable!(),
         }
     }

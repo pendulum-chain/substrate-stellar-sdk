@@ -21,23 +21,18 @@ impl Horizon {
         timeout_milliseconds: u64,
     ) -> Result<(), FetchError> {
         let (memo, operations) = match transaction_envelope {
-            TransactionEnvelope::EnvelopeTypeTxV0(envelope) => {
-                (&envelope.tx.memo, &envelope.tx.operations)
-            }
-            TransactionEnvelope::EnvelopeTypeTx(envelope) => {
-                (&envelope.tx.memo, &envelope.tx.operations)
-            }
+            TransactionEnvelope::EnvelopeTypeTxV0(envelope) => (&envelope.tx.memo, &envelope.tx.operations),
+            TransactionEnvelope::EnvelopeTypeTx(envelope) => (&envelope.tx.memo, &envelope.tx.operations),
             TransactionEnvelope::EnvelopeTypeTxFeeBump(envelope) => match &envelope.tx.inner_tx {
-                crate::types::FeeBumpTransactionInnerTx::EnvelopeTypeTx(envelope) => {
-                    (&envelope.tx.memo, &envelope.tx.operations)
-                }
+                crate::types::FeeBumpTransactionInnerTx::EnvelopeTypeTx(envelope) =>
+                    (&envelope.tx.memo, &envelope.tx.operations),
                 crate::types::FeeBumpTransactionInnerTx::Default(_) => unreachable!(),
             },
             TransactionEnvelope::Default(_) => unreachable!(),
         };
 
         if *memo != Memo::MemoNone {
-            return Ok(());
+            return Ok(())
         }
 
         let mut destinations: Vec<&Uint256> = Vec::with_capacity(operations.len());
@@ -58,22 +53,17 @@ impl Horizon {
             };
 
             if destinations.contains(&destination) {
-                continue;
+                continue
             }
 
             destinations.push(destination);
 
-            let account_response = self.fetch_account(
-                AccountId::from_binary(destination.clone()),
-                timeout_milliseconds,
-            );
+            let account_response =
+                self.fetch_account(AccountId::from_binary(destination.clone()), timeout_milliseconds);
 
             let account_response = match account_response {
                 Ok(account_response) => account_response,
-                Err(FetchError::UnexpectedResponseStatus {
-                    status: 404,
-                    body: _,
-                }) => continue,
+                Err(FetchError::UnexpectedResponseStatus { status: 404, body: _ }) => continue,
                 Err(error) => return Err(error),
             };
 
@@ -88,9 +78,7 @@ impl Horizon {
             };
 
             if *data == ACCOUNT_REQUIRES_MEMO {
-                return Err(FetchError::AccountRequiredMemo(AccountId::from_binary(
-                    destination.clone(),
-                )));
+                return Err(FetchError::AccountRequiredMemo(AccountId::from_binary(destination.clone())))
             }
         }
 

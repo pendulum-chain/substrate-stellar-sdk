@@ -4,8 +4,7 @@ use sp_std::{vec, vec::Vec};
 
 use crate::{
     utils::key_encoding::{
-        decode_stellar_key, encode_stellar_key, ED25519_PUBLIC_KEY_BYTE_LENGTH,
-        ED25519_PUBLIC_KEY_VERSION_BYTE,
+        decode_stellar_key, encode_stellar_key, ED25519_PUBLIC_KEY_BYTE_LENGTH, ED25519_PUBLIC_KEY_VERSION_BYTE,
     },
     PublicKey, StellarSdkError, XdrCodec,
 };
@@ -69,9 +68,7 @@ impl PublicKey {
     pub fn get_signature_hint(&self) -> [u8; 4] {
         let account_id_xdr = Self::PublicKeyTypeEd25519(self.as_binary().clone()).to_xdr();
 
-        account_id_xdr[account_id_xdr.len() - 4..]
-            .try_into()
-            .unwrap()
+        account_id_xdr[account_id_xdr.len() - 4..].try_into().unwrap()
     }
 
     /// Verify the signature of a message.
@@ -84,11 +81,6 @@ impl PublicKey {
         signed_message.extend_from_slice(signature);
         signed_message.extend_from_slice(message);
 
-        sign_attached_open(
-            &mut vec![0; message.len() + SIGN_LEN],
-            &signed_message,
-            self.as_binary(),
-        )
-        .is_ok()
+        sign_attached_open(&mut vec![0; message.len() + SIGN_LEN], &signed_message, self.as_binary()).is_ok()
     }
 }

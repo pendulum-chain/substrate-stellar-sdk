@@ -6,15 +6,13 @@ use sp_std::{prelude::*, vec, vec::Vec};
 use crate::StellarSdkError;
 
 use sodalite::{
-    sign_attached, sign_keypair_seed, SignPublicKey, SignSecretKey, SIGN_LEN, SIGN_PUBLIC_KEY_LEN,
-    SIGN_SECRET_KEY_LEN,
+    sign_attached, sign_keypair_seed, SignPublicKey, SignSecretKey, SIGN_LEN, SIGN_PUBLIC_KEY_LEN, SIGN_SECRET_KEY_LEN,
 };
 
 use crate::{
     types::{Curve25519Secret, PublicKey},
     utils::key_encoding::{
-        decode_stellar_key, encode_stellar_key, ED25519_SECRET_SEED_BYTE_LENGTH,
-        ED25519_SECRET_SEED_VERSION_BYTE,
+        decode_stellar_key, encode_stellar_key, ED25519_SECRET_SEED_BYTE_LENGTH, ED25519_SECRET_SEED_VERSION_BYTE,
     },
 };
 

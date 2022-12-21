@@ -32,16 +32,14 @@ pub mod horizon;
 pub use xdr::{
     compound_types,
     impls::{
-        account_id::IntoAccountId, claimable_balance_id::IntoClaimbleBalanceId,
-        data_value::IntoDataValue, hash::IntoHash, muxed_account::IntoMuxedAccountId,
-        time_bounds::*,
+        account_id::IntoAccountId, claimable_balance_id::IntoClaimbleBalanceId, data_value::IntoDataValue,
+        hash::IntoHash, muxed_account::IntoMuxedAccountId, time_bounds::*,
     },
     streams::{ReadStream, WriteStream},
     types::{
-        self, AccountId, Asset, AssetCode, ClaimPredicate, ClaimableBalanceId, Claimant,
-        Curve25519Secret, DataValue, FeeBumpTransaction, Hash, LedgerKey, Memo, MuxedAccount,
-        Operation, Price, PublicKey, Signer, SignerKey, TimeBounds, Transaction,
-        TransactionEnvelope, TrustLineFlags,
+        self, AccountId, Asset, AssetCode, ClaimPredicate, ClaimableBalanceId, Claimant, Curve25519Secret, DataValue,
+        FeeBumpTransaction, Hash, LedgerKey, Memo, MuxedAccount, Operation, Price, PublicKey, Signer, SignerKey,
+        TimeBounds, Transaction, TransactionEnvelope, TrustLineFlags,
     },
     xdr_codec::XdrCodec,
 };

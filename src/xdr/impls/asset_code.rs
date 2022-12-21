@@ -6,14 +6,14 @@ impl AssetCode {
     pub fn new<T: AsRef<[u8]>>(str: T) -> Result<Self, StellarSdkError> {
         let str = str.as_ref();
         if str.len() > 12 {
-            return Err(StellarSdkError::AssetCodeTooLong);
+            return Err(StellarSdkError::AssetCodeTooLong)
         }
 
         if !str.iter().all(|char| {
             let char = char::from(*char);
             char.is_ascii_alphanumeric()
         }) {
-            return Err(StellarSdkError::InvalidAssetCodeCharacter);
+            return Err(StellarSdkError::InvalidAssetCodeCharacter)
         }
 
         if str.len() <= 4 {

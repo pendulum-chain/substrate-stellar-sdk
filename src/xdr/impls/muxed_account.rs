@@ -3,8 +3,8 @@ use sp_std::vec::Vec;
 use crate::{
     types::{MuxedAccount, MuxedAccountMed25519, Uint64},
     utils::key_encoding::{
-        decode_stellar_key, encode_stellar_key, ED25519_PUBLIC_KEY_VERSION_BYTE,
-        MED25519_PUBLIC_KEY_BYTE_LENGTH, MED25519_PUBLIC_KEY_VERSION_BYTE,
+        decode_stellar_key, encode_stellar_key, ED25519_PUBLIC_KEY_VERSION_BYTE, MED25519_PUBLIC_KEY_BYTE_LENGTH,
+        MED25519_PUBLIC_KEY_VERSION_BYTE,
     },
     AccountId, IntoAccountId, PublicKey, StellarSdkError, XdrCodec,
 };
@@ -29,25 +29,17 @@ impl MuxedAccount {
             let account_id = match account_id {
                 PublicKey::PublicKeyTypeEd25519(account_id) => account_id,
             };
-            MuxedAccount::KeyTypeMuxedEd25519(MuxedAccountMed25519 {
-                id: sub_account_id,
-                ed25519: account_id,
-            })
+            MuxedAccount::KeyTypeMuxedEd25519(MuxedAccountMed25519 { id: sub_account_id, ed25519: account_id })
         })
     }
 
     pub fn from_encoding<T: AsRef<[u8]>>(encoded_key: T) -> Result<Self, StellarSdkError> {
         let encoded_key = encoded_key.as_ref();
 
-        match decode_stellar_key::<_, MED25519_PUBLIC_KEY_BYTE_LENGTH>(
-            encoded_key,
-            MED25519_PUBLIC_KEY_VERSION_BYTE,
-        ) {
+        match decode_stellar_key::<_, MED25519_PUBLIC_KEY_BYTE_LENGTH>(encoded_key, MED25519_PUBLIC_KEY_VERSION_BYTE) {
             Ok(raw_bytes) => Ok(MuxedAccount::KeyTypeMuxedEd25519(MuxedAccountMed25519 {
                 id: Uint64::from_xdr(&raw_bytes[MED25519_PUBLIC_KEY_BYTE_LENGTH - 8..]).unwrap(),
-                ed25519: raw_bytes[..MED25519_PUBLIC_KEY_BYTE_LENGTH - 8]
-                    .try_into()
-                    .unwrap(),
+                ed25519: raw_bytes[..MED25519_PUBLIC_KEY_BYTE_LENGTH - 8].try_into().unwrap(),
             })),
             Err(_) => PublicKey::from_encoding(encoded_key)
                 .map(|public_key| MuxedAccount::KeyTypeEd25519(public_key.into_binary())),
@@ -57,16 +49,13 @@ impl MuxedAccount {
     /// Return the key encoding as an ASCII string (given as `Vec<u8>`)
     pub fn to_encoding(&self) -> Vec<u8> {
         match self {
-            MuxedAccount::KeyTypeEd25519(raw_bytes) => {
-                encode_stellar_key(raw_bytes, ED25519_PUBLIC_KEY_VERSION_BYTE)
-            }
+            MuxedAccount::KeyTypeEd25519(raw_bytes) => encode_stellar_key(raw_bytes, ED25519_PUBLIC_KEY_VERSION_BYTE),
             MuxedAccount::KeyTypeMuxedEd25519(MuxedAccountMed25519 { id, ed25519 }) => {
                 let mut raw_bytes = [0u8; MED25519_PUBLIC_KEY_BYTE_LENGTH];
                 raw_bytes[..MED25519_PUBLIC_KEY_BYTE_LENGTH - 8].copy_from_slice(ed25519);
-                raw_bytes[MED25519_PUBLIC_KEY_BYTE_LENGTH - 8..]
-                    .copy_from_slice(id.to_xdr().as_slice());
+                raw_bytes[MED25519_PUBLIC_KEY_BYTE_LENGTH - 8..].copy_from_slice(id.to_xdr().as_slice());
                 encode_stellar_key(&raw_bytes, MED25519_PUBLIC_KEY_VERSION_BYTE)
-            }
+            },
             _ => unreachable!("Invalid muxed account type"),
         }
     }

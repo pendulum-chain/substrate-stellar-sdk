@@ -1,8 +1,7 @@
 use core::num::{ParseFloatError, ParseIntError};
 use sp_io::offchain::timestamp;
 use sp_runtime::offchain::{
-    http::Request,
-    http::{Error, Method},
+    http::{Error, Method, Request},
     Duration, HttpError,
 };
 use sp_std::{str, vec, vec::Vec};
@@ -12,8 +11,7 @@ use core::convert::TryInto;
 use crate::{AccountId, IntoAccountId, StellarSdkError};
 
 use super::{
-    api_response_types::FeeStats, json_response_types, Horizon, HTTP_HEADER_CLIENT_NAME,
-    HTTP_HEADER_CLIENT_VERSION,
+    api_response_types::FeeStats, json_response_types, Horizon, HTTP_HEADER_CLIENT_NAME, HTTP_HEADER_CLIENT_VERSION,
 };
 
 impl From<ParseIntError> for FetchError {
@@ -75,19 +73,13 @@ impl From<serde_json::Error> for FetchError {
 }
 
 impl Horizon {
-    pub fn request(
-        &self,
-        path: Vec<&[u8]>,
-        method: Method,
-        timeout_milliseconds: u64,
-    ) -> Result<Vec<u8>, FetchError> {
+    pub fn request(&self, path: Vec<&[u8]>, method: Method, timeout_milliseconds: u64) -> Result<Vec<u8>, FetchError> {
         let mut url = self.base_url.clone();
         for path_segment in path {
             url.extend_from_slice(path_segment);
         }
 
-        let request =
-            Request::<Vec<&'static [u8]>>::new(str::from_utf8(&url).unwrap()).method(method);
+        let request = Request::<Vec<&'static [u8]>>::new(str::from_utf8(&url).unwrap()).method(method);
         let timeout = timestamp().add(Duration::from_millis(timeout_milliseconds));
         let pending = request
             .add_header("X-Client-Name", HTTP_HEADER_CLIENT_NAME)
@@ -95,16 +87,11 @@ impl Horizon {
             .deadline(timeout)
             .send()?;
 
-        let response = pending
-            .try_wait(timeout)
-            .map_err(|_| FetchError::DeadlineReached)?;
+        let response = pending.try_wait(timeout).map_err(|_| FetchError::DeadlineReached)?;
         let response = response?;
 
         if response.code != 200 {
-            return Err(FetchError::UnexpectedResponseStatus {
-                status: response.code,
-                body: response.body().collect(),
-            });
+            return Err(FetchError::UnexpectedResponseStatus { status: response.code, body: response.body().collect() })
         }
 
         Ok(response.body().collect())

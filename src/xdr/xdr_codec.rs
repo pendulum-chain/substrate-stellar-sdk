@@ -26,9 +26,7 @@ pub trait XdrCodec: Sized {
         let mut read_stream = ReadStream::new(input);
         let value = Self::from_xdr_buffered(&mut read_stream)?;
         if read_stream.no_of_bytes_left_to_read() != 0 {
-            return Err(DecodeError::TypeEndsTooEarly {
-                remaining_no_of_bytes: read_stream.no_of_bytes_left_to_read(),
-            });
+            return Err(DecodeError::TypeEndsTooEarly { remaining_no_of_bytes: read_stream.no_of_bytes_left_to_read() })
         }
 
         Ok(value)
@@ -60,7 +58,7 @@ pub trait XdrCodec: Sized {
             Ok(bytes_written) => {
                 buf.resize(bytes_written, 0);
                 Self::from_xdr(buf)
-            }
+            },
             Err(_) => Err(DecodeError::InvalidBase64),
         }
     }
@@ -75,9 +73,7 @@ pub trait XdrCodec: Sized {
     ///
     /// This is the basic implementation of the XDR decoder of this type. The methods
     /// `from_xdr` and `from_base64_xdr` call this function to do the heavy lifting.
-    fn from_xdr_buffered<T: AsRef<[u8]>>(
-        read_stream: &mut ReadStream<T>,
-    ) -> Result<Self, DecodeError>;
+    fn from_xdr_buffered<T: AsRef<[u8]>>(read_stream: &mut ReadStream<T>) -> Result<Self, DecodeError>;
 }
 
 /// Implementation of the XDR decoder/encoder for `u64`
@@ -86,9 +82,7 @@ impl XdrCodec for u64 {
         write_stream.write_next_u64(*self);
     }
 
-    fn from_xdr_buffered<T: AsRef<[u8]>>(
-        read_stream: &mut ReadStream<T>,
-    ) -> Result<Self, DecodeError> {
+    fn from_xdr_buffered<T: AsRef<[u8]>>(read_stream: &mut ReadStream<T>) -> Result<Self, DecodeError> {
         read_stream.read_next_u64()
     }
 }
@@ -99,9 +93,7 @@ impl XdrCodec for i64 {
         write_stream.write_next_i64(*self);
     }
 
-    fn from_xdr_buffered<T: AsRef<[u8]>>(
-        read_stream: &mut ReadStream<T>,
-    ) -> Result<Self, DecodeError> {
+    fn from_xdr_buffered<T: AsRef<[u8]>>(read_stream: &mut ReadStream<T>) -> Result<Self, DecodeError> {
         read_stream.read_next_i64()
     }
 }
@@ -112,9 +104,7 @@ impl XdrCodec for u32 {
         write_stream.write_next_u32(*self);
     }
 
-    fn from_xdr_buffered<T: AsRef<[u8]>>(
-        read_stream: &mut ReadStream<T>,
-    ) -> Result<Self, DecodeError> {
+    fn from_xdr_buffered<T: AsRef<[u8]>>(read_stream: &mut ReadStream<T>) -> Result<Self, DecodeError> {
         read_stream.read_next_u32()
     }
 }
@@ -125,9 +115,7 @@ impl XdrCodec for i32 {
         write_stream.write_next_i32(*self);
     }
 
-    fn from_xdr_buffered<T: AsRef<[u8]>>(
-        read_stream: &mut ReadStream<T>,
-    ) -> Result<Self, DecodeError> {
+    fn from_xdr_buffered<T: AsRef<[u8]>>(read_stream: &mut ReadStream<T>) -> Result<Self, DecodeError> {
         read_stream.read_next_i32()
     }
 }
@@ -138,17 +126,13 @@ impl XdrCodec for bool {
         write_stream.write_next_i32(if *self { 1 } else { 0 });
     }
 
-    fn from_xdr_buffered<T: AsRef<[u8]>>(
-        read_stream: &mut ReadStream<T>,
-    ) -> Result<Self, DecodeError> {
+    fn from_xdr_buffered<T: AsRef<[u8]>>(read_stream: &mut ReadStream<T>) -> Result<Self, DecodeError> {
         let parsed_int = read_stream.read_next_i32()?;
         match parsed_int {
             0 => Ok(false),
             1 => Ok(true),
-            _ => Err(DecodeError::InvalidBoolean {
-                found_integer: parsed_int,
-                at_position: read_stream.get_position(),
-            }),
+            _ =>
+                Err(DecodeError::InvalidBoolean { found_integer: parsed_int, at_position: read_stream.get_position() }),
         }
     }
 }
@@ -163,9 +147,7 @@ impl<T: XdrCodec, const N: usize> XdrCodec for [T; N] {
         }
     }
 
-    fn from_xdr_buffered<R: AsRef<[u8]>>(
-        read_stream: &mut ReadStream<R>,
-    ) -> Result<Self, DecodeError> {
+    fn from_xdr_buffered<R: AsRef<[u8]>>(read_stream: &mut ReadStream<R>) -> Result<Self, DecodeError> {
         let mut result = Vec::<T>::with_capacity(N);
         for _ in 0..N {
             result.push(T::from_xdr_buffered(read_stream)?)
@@ -180,9 +162,7 @@ impl<const N: usize> XdrCodec for [u8; N] {
         write_stream.write_next_binary_data(self);
     }
 
-    fn from_xdr_buffered<T: AsRef<[u8]>>(
-        read_stream: &mut ReadStream<T>,
-    ) -> Result<Self, DecodeError> {
+    fn from_xdr_buffered<T: AsRef<[u8]>>(read_stream: &mut ReadStream<T>) -> Result<Self, DecodeError> {
         let value = read_stream.read_next_binary_data(N)?;
         value.try_into().map_err(|_| unreachable!())
     }
@@ -198,20 +178,15 @@ impl<T: XdrCodec> XdrCodec for Option<T> {
             Some(value) => {
                 write_stream.write_next_u32(1);
                 value.to_xdr_buffered(write_stream);
-            }
+            },
         }
     }
 
-    fn from_xdr_buffered<R: AsRef<[u8]>>(
-        read_stream: &mut ReadStream<R>,
-    ) -> Result<Self, DecodeError> {
+    fn from_xdr_buffered<R: AsRef<[u8]>>(read_stream: &mut ReadStream<R>) -> Result<Self, DecodeError> {
         match read_stream.read_next_u32()? {
             0 => Ok(None),
             1 => T::from_xdr_buffered(read_stream).map(|ok| Some(ok)),
-            code => Err(DecodeError::InvalidOptional {
-                at_position: read_stream.get_position(),
-                has_code: code,
-            }),
+            code => Err(DecodeError::InvalidOptional { at_position: read_stream.get_position(), has_code: code }),
         }
     }
 }
@@ -224,9 +199,7 @@ impl<T: XdrCodec> XdrCodec for Box<T> {
         self.as_ref().to_xdr_buffered(write_stream)
     }
 
-    fn from_xdr_buffered<R: AsRef<[u8]>>(
-        read_stream: &mut ReadStream<R>,
-    ) -> Result<Self, DecodeError> {
+    fn from_xdr_buffered<R: AsRef<[u8]>>(read_stream: &mut ReadStream<R>) -> Result<Self, DecodeError> {
         Ok(Box::new(T::from_xdr_buffered(read_stream)?))
     }
 }

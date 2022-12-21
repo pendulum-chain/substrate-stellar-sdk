@@ -23,22 +23,18 @@ pub fn decode_stellar_key<T: AsRef<[u8]>, const BYTE_LENGTH: usize>(
 ) -> Result<[u8; BYTE_LENGTH], StellarSdkError> {
     let decoded_array = decode(encoded_key.as_ref())?;
     if *encoded_key.as_ref() != encode(&decoded_array)[..] {
-        return Err(StellarSdkError::InvalidStellarKeyEncoding);
+        return Err(StellarSdkError::InvalidStellarKeyEncoding)
     }
 
     let array_length = decoded_array.len();
     if array_length != 3 + BYTE_LENGTH {
-        return Err(StellarSdkError::InvalidStellarKeyEncodingLength);
+        return Err(StellarSdkError::InvalidStellarKeyEncodingLength)
     }
 
-    let crc_value =
-        ((decoded_array[array_length - 1] as u16) << 8) | decoded_array[array_length - 2] as u16;
+    let crc_value = ((decoded_array[array_length - 1] as u16) << 8) | decoded_array[array_length - 2] as u16;
     let expected_crc_value = crc(&decoded_array[..array_length - 2]);
     if crc_value != expected_crc_value {
-        return Err(StellarSdkError::InvalidStellarKeyChecksum {
-            expected: expected_crc_value,
-            found: crc_value,
-        });
+        return Err(StellarSdkError::InvalidStellarKeyChecksum { expected: expected_crc_value, found: crc_value })
     }
 
     let expected_version = version_byte;
@@ -46,17 +42,14 @@ pub fn decode_stellar_key<T: AsRef<[u8]>, const BYTE_LENGTH: usize>(
         return Err(StellarSdkError::InvalidStellarKeyEncodingVersion {
             expected_version: expected_version as char,
             found_version: decoded_array[0] as char,
-        });
+        })
     }
 
     Ok(decoded_array[1..array_length - 2].try_into().unwrap())
 }
 
 /// Return the key encoding as an ASCII string (given as `Vec<u8>`)
-pub fn encode_stellar_key<const BYTE_LENGTH: usize>(
-    key: &[u8; BYTE_LENGTH],
-    version_byte: u8,
-) -> Vec<u8> {
+pub fn encode_stellar_key<const BYTE_LENGTH: usize>(key: &[u8; BYTE_LENGTH], version_byte: u8) -> Vec<u8> {
     let mut unencoded_array = Vec::with_capacity(3 + BYTE_LENGTH);
     unencoded_array.push(version_byte);
     unencoded_array.extend(key.iter());

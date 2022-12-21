@@ -204,11 +204,7 @@ mod test {
             home_domain: None,
             last_modified_ledger: 341038,
             last_modified_time: String::from("2021-07-07T03:03:39Z"),
-            thresholds: AccountThresholds {
-                low_threshold: 0,
-                med_threshold: 0,
-                high_threshold: 0,
-            },
+            thresholds: AccountThresholds { low_threshold: 0, med_threshold: 0, high_threshold: 0 },
             flags: AccountFlags {
                 auth_required: false,
                 auth_revocable: false,
@@ -330,11 +326,7 @@ mod test {
             home_domain: Some(String::from("centre.io")),
             last_modified_ledger: 35792496,
             last_modified_time: String::from("2021-06-08T05:40:32Z"),
-            thresholds: AccountThresholds {
-                low_threshold: 2,
-                med_threshold: 2,
-                high_threshold: 2,
-            },
+            thresholds: AccountThresholds { low_threshold: 2, med_threshold: 2, high_threshold: 2 },
             flags: AccountFlags {
                 auth_required: false,
                 auth_revocable: false,
@@ -354,9 +346,7 @@ mod test {
                     is_clawback_enabled: None,
                     asset_type: String::from("credit_alphanum12"),
                     asset_code: Some(String::from("USDCAllow")),
-                    asset_issuer: Some(String::from(
-                        "GDIEKKIQWMIZ4LD3RP3ABPN7X5KEAEWYMR634BRHB7EULIMEVREWLF3G",
-                    )),
+                    asset_issuer: Some(String::from("GDIEKKIQWMIZ4LD3RP3ABPN7X5KEAEWYMR634BRHB7EULIMEVREWLF3G")),
                 },
                 Balance {
                     balance: String::from("1434.4215940"),

@@ -14,9 +14,7 @@ pub use fetch::FetchError;
 
 impl Horizon {
     pub fn new(base_url: &str) -> Horizon {
-        Horizon {
-            base_url: base_url.as_bytes().to_vec(),
-        }
+        Horizon { base_url: base_url.as_bytes().to_vec() }
     }
 }
 

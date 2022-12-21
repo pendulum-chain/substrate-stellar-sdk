@@ -11,9 +11,7 @@ impl Operation {
     ) -> Result<Operation, StellarSdkError> {
         let authorize: u32 = match authorize {
             Some(authorize) => match authorize {
-                TrustLineFlags::TrustlineClawbackEnabledFlag => {
-                    return Err(StellarSdkError::InvalidAuthorizeFlag)
-                }
+                TrustLineFlags::TrustlineClawbackEnabledFlag => return Err(StellarSdkError::InvalidAuthorizeFlag),
                 _ => authorize as u32,
             },
             None => 0,

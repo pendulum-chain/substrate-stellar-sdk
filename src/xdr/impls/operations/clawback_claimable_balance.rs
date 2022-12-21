@@ -11,9 +11,7 @@ impl Operation {
 
         Ok(Operation {
             source_account: None,
-            body: OperationBody::ClawbackClaimableBalance(ClawbackClaimableBalanceOp {
-                balance_id,
-            }),
+            body: OperationBody::ClawbackClaimableBalance(ClawbackClaimableBalanceOp { balance_id }),
         })
     }
 }

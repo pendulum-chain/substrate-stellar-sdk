@@ -1,7 +1,9 @@
 //! Streams for efficient encoding and decoding
 
-use core::convert::{AsRef, TryInto};
-use core::iter;
+use core::{
+    convert::{AsRef, TryInto},
+    iter,
+};
 
 use sp_std::vec::Vec;
 
@@ -92,15 +94,12 @@ pub struct ReadStream<T: AsRef<[u8]>> {
 impl<T: AsRef<[u8]>> ReadStream<T> {
     /// Create a new `ReadStream` from a reference to a byte slice
     pub fn new(source: T) -> ReadStream<T> {
-        ReadStream {
-            read_index: 0,
-            source,
-        }
+        ReadStream { read_index: 0, source }
     }
 
     fn ensure_size(&self, no_of_bytes_to_read: usize) -> Result<(), DecodeError> {
         if no_of_bytes_to_read + self.read_index > self.source.as_ref().len() {
-            return Err(self.generate_sudden_end_error(no_of_bytes_to_read));
+            return Err(self.generate_sudden_end_error(no_of_bytes_to_read))
         }
         Ok(())
     }
@@ -113,14 +112,13 @@ impl<T: AsRef<[u8]>> ReadStream<T> {
     }
 
     fn read_next_byte_array<const N: usize>(&mut self) -> Result<&[u8; N], DecodeError> {
-        let array: Result<&[u8; N], _> =
-            (self.source.as_ref()[self.read_index..self.read_index + N]).try_into();
+        let array: Result<&[u8; N], _> = (self.source.as_ref()[self.read_index..self.read_index + N]).try_into();
 
         match array {
             Ok(array) => {
                 self.read_index += N;
                 Ok(array)
-            }
+            },
             Err(_) => Err(self.generate_sudden_end_error(N)),
         }
     }
@@ -179,9 +177,7 @@ pub struct WriteStream {
 impl WriteStream {
     /// Construct a new `WriteStream`
     pub fn new() -> WriteStream {
-        WriteStream {
-            result: Vec::with_capacity(128),
-        }
+        WriteStream { result: Vec::with_capacity(128) }
     }
 
     /// Append a new big endian u32 to the stream
@@ -209,8 +205,7 @@ impl WriteStream {
         self.result.extend_from_slice(value);
         let length = value.len();
         let no_of_padding_bytes = extend_to_multiple_of_4(length) - length;
-        self.result
-            .extend(iter::repeat(0).take(no_of_padding_bytes));
+        self.result.extend(iter::repeat(0).take(no_of_padding_bytes));
     }
 
     /// Get the result written to the stream

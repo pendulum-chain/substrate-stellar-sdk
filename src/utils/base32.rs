@@ -22,11 +22,7 @@ pub fn encode<T: AsRef<[u8]>>(binary: T) -> Vec<u8> {
     let mut carry = 0;
 
     for byte in binary.as_ref().iter() {
-        let value_5bit = if shift == 8 {
-            carry
-        } else {
-            carry | ((*byte) >> shift)
-        };
+        let value_5bit = if shift == 8 { carry } else { carry | ((*byte) >> shift) };
         buffer.push(ALPHABET[(value_5bit & 0x1f) as usize]);
 
         if shift > 5 {
@@ -54,7 +50,7 @@ pub fn decode<T: AsRef<[u8]>>(string: T) -> Result<Vec<u8>, StellarSdkError> {
 
     for (position, ascii) in string.as_ref().iter().enumerate() {
         if *ascii as char == '=' {
-            break;
+            break
         }
 
         let value_5bit = ascii_to_value_5bit(*ascii);
@@ -72,9 +68,7 @@ pub fn decode<T: AsRef<[u8]>>(string: T) -> Result<Vec<u8>, StellarSdkError> {
                 carry = 0;
             }
         } else {
-            return Err(StellarSdkError::InvalidBase32Character {
-                at_position: position,
-            });
+            return Err(StellarSdkError::InvalidBase32Character { at_position: position })
         }
     }
 

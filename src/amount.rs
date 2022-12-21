@@ -39,7 +39,7 @@ impl TryFrom<LumenAmount> for StroopAmount {
     fn try_from(value: LumenAmount) -> Result<Self, Self::Error> {
         let float_stroops = value.0 * STROOPS_PER_LUMEN as f64;
         if float_stroops > i64::MAX as f64 {
-            return Err(StellarSdkError::AmountOverflow);
+            return Err(StellarSdkError::AmountOverflow)
         }
 
         Ok(StroopAmount(float_stroops as i64))
@@ -61,13 +61,13 @@ impl<T: AsRef<[u8]>> IntoAmount for T {
             Some(seperator_position) => {
                 let decimals_length = string.len() - seperator_position - 1;
                 if decimals_length > 7 {
-                    return Err(StellarSdkError::InvalidAmountString);
+                    return Err(StellarSdkError::InvalidAmountString)
                 }
                 let mut decimals = [b'0'; 7];
                 decimals[..decimals_length].copy_from_slice(&string[seperator_position + 1..]);
 
                 (&string[..seperator_position], parse_integer(&decimals)?)
-            }
+            },
             None => (&string[..], 0),
         };
 
@@ -84,7 +84,7 @@ impl<T: AsRef<[u8]>> IntoAmount for T {
         };
 
         if result == 0 && !allow_zero {
-            return Err(StellarSdkError::AmountNonPositive);
+            return Err(StellarSdkError::AmountNonPositive)
         }
 
         Ok(result)
@@ -93,12 +93,10 @@ impl<T: AsRef<[u8]>> IntoAmount for T {
 
 fn parse_integer(slice: &[u8]) -> Result<i64, StellarSdkError> {
     if !slice.iter().all(|char| (*char as char).is_ascii_digit()) {
-        return Err(StellarSdkError::InvalidAmountString);
+        return Err(StellarSdkError::InvalidAmountString)
     }
     let slice = str::from_utf8(slice).unwrap();
-    slice
-        .parse()
-        .map_err(|_| StellarSdkError::InvalidAmountString)
+    slice.parse().map_err(|_| StellarSdkError::InvalidAmountString)
 }
 
 #[cfg(test)]
@@ -108,69 +106,30 @@ mod test {
     #[test]
     fn parse_lumen_string() {
         assert_eq!("23".into_stroop_amount(true), Ok(230_000_000));
-        assert_eq!(
-            "922337203685".into_stroop_amount(true),
-            Ok(9223372036850_000_000)
-        );
-        assert_eq!(
-            "922337203686".into_stroop_amount(true),
-            Err(StellarSdkError::AmountOverflow)
-        );
+        assert_eq!("922337203685".into_stroop_amount(true), Ok(9223372036850_000_000));
+        assert_eq!("922337203686".into_stroop_amount(true), Err(StellarSdkError::AmountOverflow));
 
         assert_eq!("0.23".into_stroop_amount(true), Ok(2_300_000));
         assert_eq!("0.232442".into_stroop_amount(true), Ok(2_324_420));
         assert_eq!("14.2324426".into_stroop_amount(true), Ok(142_324_426));
-        assert_eq!(
-            "14.23244267".into_stroop_amount(true),
-            Err(StellarSdkError::InvalidAmountString)
-        );
+        assert_eq!("14.23244267".into_stroop_amount(true), Err(StellarSdkError::InvalidAmountString));
 
         assert_eq!("420.".into_stroop_amount(true), Ok(4200_000_000));
 
         // maximal value allowed in Stellar (max value that fits in a i64)
-        assert_eq!(
-            "922337203685.4775807".into_stroop_amount(true),
-            Ok(9223372036854775807)
-        );
-        assert_eq!(
-            "922337203685.4775807".into_stroop_amount(true),
-            Ok(i64::MAX)
-        );
+        assert_eq!("922337203685.4775807".into_stroop_amount(true), Ok(9223372036854775807));
+        assert_eq!("922337203685.4775807".into_stroop_amount(true), Ok(i64::MAX));
 
         // one more stroop and it overflows
-        assert_eq!(
-            "922337203685.4775808".into_stroop_amount(true),
-            Err(StellarSdkError::AmountOverflow)
-        );
+        assert_eq!("922337203685.4775808".into_stroop_amount(true), Err(StellarSdkError::AmountOverflow));
 
-        assert_eq!(
-            ".".into_stroop_amount(true),
-            Err(StellarSdkError::InvalidAmountString)
-        );
-        assert_eq!(
-            "".into_stroop_amount(true),
-            Err(StellarSdkError::InvalidAmountString)
-        );
+        assert_eq!(".".into_stroop_amount(true), Err(StellarSdkError::InvalidAmountString));
+        assert_eq!("".into_stroop_amount(true), Err(StellarSdkError::InvalidAmountString));
 
-        assert_eq!(
-            "243. 34".into_stroop_amount(true),
-            Err(StellarSdkError::InvalidAmountString)
-        );
-        assert_eq!(
-            "243.+34".into_stroop_amount(true),
-            Err(StellarSdkError::InvalidAmountString)
-        );
-        assert_eq!(
-            "+243.34".into_stroop_amount(true),
-            Err(StellarSdkError::InvalidAmountString)
-        );
-        assert_eq!(
-            "243.34x".into_stroop_amount(true),
-            Err(StellarSdkError::InvalidAmountString)
-        );
-        assert_eq!(
-            "24?.34x".into_stroop_amount(true),
-            Err(StellarSdkError::InvalidAmountString)
-        );
+        assert_eq!("243. 34".into_stroop_amount(true), Err(StellarSdkError::InvalidAmountString));
+        assert_eq!("243.+34".into_stroop_amount(true), Err(StellarSdkError::InvalidAmountString));
+        assert_eq!("+243.34".into_stroop_amount(true), Err(StellarSdkError::InvalidAmountString));
+        assert_eq!("243.34x".into_stroop_amount(true), Err(StellarSdkError::InvalidAmountString));
+        assert_eq!("24?.34x".into_stroop_amount(true), Err(StellarSdkError::InvalidAmountString));
     }
 }

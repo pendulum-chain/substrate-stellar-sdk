@@ -22,9 +22,7 @@ impl Operation {
         })
     }
 
-    pub fn new_manage_data_delete<T: AsRef<[u8]>>(
-        data_name: T,
-    ) -> Result<Operation, StellarSdkError> {
+    pub fn new_manage_data_delete<T: AsRef<[u8]>>(data_name: T) -> Result<Operation, StellarSdkError> {
         let data_name = data_name.as_ref().to_vec();
 
         Ok(Operation {

@@ -15,13 +15,11 @@ impl<T: AsRef<[u8]>> AsBinary<T> {
             AsBinary::Binary(binary) => {
                 let binary = binary.as_ref();
 
-                binary
-                    .try_into()
-                    .map_err(|_| StellarSdkError::InvalidBinaryLength {
-                        found_length: binary.len(),
-                        expected_length: N,
-                    })
-            }
+                binary.try_into().map_err(|_| StellarSdkError::InvalidBinaryLength {
+                    found_length: binary.len(),
+                    expected_length: N,
+                })
+            },
 
             AsBinary::Hex(hex) => {
                 let hex = hex.as_ref();
@@ -29,13 +27,11 @@ impl<T: AsRef<[u8]>> AsBinary<T> {
                 decoded.resize(hex.len() / 2, 0);
                 let decoded_length = decoded.len();
 
-                decoded
-                    .try_into()
-                    .map_err(|_| StellarSdkError::InvalidBinaryLength {
-                        found_length: decoded_length,
-                        expected_length: N,
-                    })
-            }
+                decoded.try_into().map_err(|_| StellarSdkError::InvalidBinaryLength {
+                    found_length: decoded_length,
+                    expected_length: N,
+                })
+            },
         }
     }
 }

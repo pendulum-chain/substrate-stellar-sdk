@@ -13,7 +13,7 @@ impl Operation {
         claimants: Vec<Claimant>,
     ) -> Result<Operation, StellarSdkError> {
         if claimants.is_empty() {
-            return Err(StellarSdkError::EmptyClaimants);
+            return Err(StellarSdkError::EmptyClaimants)
         }
 
         Ok(Operation {

@@ -26,13 +26,7 @@ impl IntoTimePoint for () {
 }
 
 impl TimeBounds {
-    pub fn from_time_points<T: IntoTimePoint, S: IntoTimePoint>(
-        min_time: T,
-        max_time: S,
-    ) -> TimeBounds {
-        TimeBounds {
-            min_time: min_time.into_time_point(),
-            max_time: max_time.into_time_point(),
-        }
+    pub fn from_time_points<T: IntoTimePoint, S: IntoTimePoint>(min_time: T, max_time: S) -> TimeBounds {
+        TimeBounds { min_time: min_time.into_time_point(), max_time: max_time.into_time_point() }
     }
 }
