@@ -1,6 +1,6 @@
 # A Stellar SDK for Substrate projects
 
-This is an SDK for [Stellar](https://stellar.org) that is suitable for use in a [Substrate](https://substrate.dev/) project. It does not depend on the standard library but on the crate [`sp-std`](https://crates.io/crates/sp-std), which is Substrate's replacement of Rust's standard library.
+This is an SDK for [Stellar](https://stellar.org) that is suitable to be used in a [Substrate](https://substrate.dev/) project. It does not depend on the standard library but on the crate [`sp-std`](https://crates.io/crates/sp-std), which is Substrate's replacement of Rust's standard library.
 
 ## Crate Features
 
