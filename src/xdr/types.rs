@@ -883,7 +883,7 @@ impl XdrCodec for ScSpecTypeOption {
     }
 
     fn from_xdr_buffered<T: AsRef<[u8]>>(read_stream: &mut ReadStream<T>) -> Result<Self, DecodeError> {
-        Ok(ScSpecTypeOption { value_type: ScSpecTypeDef::from_xdr_buffered(read_stream)? })
+        Ok(ScSpecTypeOption { value_type: Box::new(ScSpecTypeDef::from_xdr_buffered(read_stream)?) })
     }
 }
 
@@ -892,7 +892,7 @@ impl XdrCodec for ScSpecTypeOption {
 #[cfg(feature = "all-types")]
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ScSpecTypeResult {
-    pub ok_type: ScSpecTypeDef,
+    pub ok_type: Box<ScSpecTypeDef>,
     pub error_type: ScSpecTypeDef,
 }
 
@@ -905,7 +905,7 @@ impl XdrCodec for ScSpecTypeResult {
 
     fn from_xdr_buffered<T: AsRef<[u8]>>(read_stream: &mut ReadStream<T>) -> Result<Self, DecodeError> {
         Ok(ScSpecTypeResult {
-            ok_type: ScSpecTypeDef::from_xdr_buffered(read_stream)?,
+            ok_type: Box::new(ScSpecTypeDef::from_xdr_buffered(read_stream)?),
             error_type: ScSpecTypeDef::from_xdr_buffered(read_stream)?,
         })
     }
@@ -916,7 +916,7 @@ impl XdrCodec for ScSpecTypeResult {
 #[cfg(feature = "all-types")]
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ScSpecTypeVec {
-    pub element_type: ScSpecTypeDef,
+    pub element_type: Box<ScSpecTypeDef>,
 }
 
 #[cfg(feature = "all-types")]
@@ -926,7 +926,7 @@ impl XdrCodec for ScSpecTypeVec {
     }
 
     fn from_xdr_buffered<T: AsRef<[u8]>>(read_stream: &mut ReadStream<T>) -> Result<Self, DecodeError> {
-        Ok(ScSpecTypeVec { element_type: ScSpecTypeDef::from_xdr_buffered(read_stream)? })
+        Ok(ScSpecTypeVec { element_type: Box::new(ScSpecTypeDef::from_xdr_buffered(read_stream)?) })
     }
 }
 
@@ -935,7 +935,7 @@ impl XdrCodec for ScSpecTypeVec {
 #[cfg(feature = "all-types")]
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ScSpecTypeMap {
-    pub key_type: ScSpecTypeDef,
+    pub key_type: Box<ScSpecTypeDef>,
     pub value_type: ScSpecTypeDef,
 }
 
@@ -948,7 +948,7 @@ impl XdrCodec for ScSpecTypeMap {
 
     fn from_xdr_buffered<T: AsRef<[u8]>>(read_stream: &mut ReadStream<T>) -> Result<Self, DecodeError> {
         Ok(ScSpecTypeMap {
-            key_type: ScSpecTypeDef::from_xdr_buffered(read_stream)?,
+            key_type: Box::new(ScSpecTypeDef::from_xdr_buffered(read_stream)?),
             value_type: ScSpecTypeDef::from_xdr_buffered(read_stream)?,
         })
     }
@@ -959,7 +959,7 @@ impl XdrCodec for ScSpecTypeMap {
 #[cfg(feature = "all-types")]
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ScSpecTypeTuple {
-    pub value_types: LimitedVarArray<ScSpecTypeDef, 12>,
+    pub value_types: Box<LimitedVarArray<ScSpecTypeDef, 12>>,
 }
 
 #[cfg(feature = "all-types")]
@@ -969,7 +969,9 @@ impl XdrCodec for ScSpecTypeTuple {
     }
 
     fn from_xdr_buffered<T: AsRef<[u8]>>(read_stream: &mut ReadStream<T>) -> Result<Self, DecodeError> {
-        Ok(ScSpecTypeTuple { value_types: LimitedVarArray::<ScSpecTypeDef, 12>::from_xdr_buffered(read_stream)? })
+        Ok(ScSpecTypeTuple {
+            value_types: Box::new(LimitedVarArray::<ScSpecTypeDef, 12>::from_xdr_buffered(read_stream)?),
+        })
     }
 }
 
@@ -978,7 +980,7 @@ impl XdrCodec for ScSpecTypeTuple {
 #[cfg(feature = "all-types")]
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ScSpecTypeBytesN {
-    pub n: Uint32,
+    pub n: Box<Uint32>,
 }
 
 #[cfg(feature = "all-types")]
@@ -988,7 +990,7 @@ impl XdrCodec for ScSpecTypeBytesN {
     }
 
     fn from_xdr_buffered<T: AsRef<[u8]>>(read_stream: &mut ReadStream<T>) -> Result<Self, DecodeError> {
-        Ok(ScSpecTypeBytesN { n: Uint32::from_xdr_buffered(read_stream)? })
+        Ok(ScSpecTypeBytesN { n: Box::new(Uint32::from_xdr_buffered(read_stream)?) })
     }
 }
 
@@ -997,7 +999,7 @@ impl XdrCodec for ScSpecTypeBytesN {
 #[cfg(feature = "all-types")]
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ScSpecTypeUdt {
-    pub name: LimitedString<60>,
+    pub name: Box<LimitedString<60>>,
 }
 
 #[cfg(feature = "all-types")]
@@ -1007,7 +1009,7 @@ impl XdrCodec for ScSpecTypeUdt {
     }
 
     fn from_xdr_buffered<T: AsRef<[u8]>>(read_stream: &mut ReadStream<T>) -> Result<Self, DecodeError> {
-        Ok(ScSpecTypeUdt { name: LimitedString::<60>::from_xdr_buffered(read_stream)? })
+        Ok(ScSpecTypeUdt { name: Box::new(LimitedString::<60>::from_xdr_buffered(read_stream)?) })
     }
 }
 
@@ -8121,12 +8123,12 @@ pub enum ScSpecTypeDef {
     ScSpecTypeSymbol,
     ScSpecTypeAddress,
     ScSpecTypeOption(Box<ScSpecTypeOption>),
-    ScSpecTypeResult(ScSpecTypeResult),
-    ScSpecTypeVec(ScSpecTypeVec),
-    ScSpecTypeMap(ScSpecTypeMap),
-    ScSpecTypeTuple(ScSpecTypeTuple),
-    ScSpecTypeBytesN(ScSpecTypeBytesN),
-    ScSpecTypeUdt(ScSpecTypeUdt),
+    ScSpecTypeResult(Box<ScSpecTypeResult>),
+    ScSpecTypeVec(Box<ScSpecTypeVec>),
+    ScSpecTypeMap(Box<ScSpecTypeMap>),
+    ScSpecTypeTuple(Box<ScSpecTypeTuple>),
+    ScSpecTypeBytesN(Box<ScSpecTypeBytesN>),
+    ScSpecTypeUdt(Box<ScSpecTypeUdt>),
 }
 
 #[cfg(feature = "all-types")]
@@ -8203,19 +8205,19 @@ impl XdrCodec for ScSpecTypeDef {
             ScSpecType::ScSpecTypeSymbol => Ok(ScSpecTypeDef::ScSpecTypeSymbol),
             ScSpecType::ScSpecTypeAddress => Ok(ScSpecTypeDef::ScSpecTypeAddress),
             ScSpecType::ScSpecTypeOption =>
-                Ok(ScSpecTypeDef::ScSpecTypeOption(ScSpecTypeOption::from_xdr_buffered(read_stream)?)),
+                Ok(ScSpecTypeDef::ScSpecTypeOption(Box::new(ScSpecTypeOption::from_xdr_buffered(read_stream)?))),
             ScSpecType::ScSpecTypeResult =>
-                Ok(ScSpecTypeDef::ScSpecTypeResult(ScSpecTypeResult::from_xdr_buffered(read_stream)?)),
+                Ok(ScSpecTypeDef::ScSpecTypeResult(Box::new(ScSpecTypeResult::from_xdr_buffered(read_stream)?))),
             ScSpecType::ScSpecTypeVec =>
-                Ok(ScSpecTypeDef::ScSpecTypeVec(ScSpecTypeVec::from_xdr_buffered(read_stream)?)),
+                Ok(ScSpecTypeDef::ScSpecTypeVec(Box::new(ScSpecTypeVec::from_xdr_buffered(read_stream)?))),
             ScSpecType::ScSpecTypeMap =>
-                Ok(ScSpecTypeDef::ScSpecTypeMap(ScSpecTypeMap::from_xdr_buffered(read_stream)?)),
+                Ok(ScSpecTypeDef::ScSpecTypeMap(Box::new(ScSpecTypeMap::from_xdr_buffered(read_stream)?))),
             ScSpecType::ScSpecTypeTuple =>
-                Ok(ScSpecTypeDef::ScSpecTypeTuple(ScSpecTypeTuple::from_xdr_buffered(read_stream)?)),
+                Ok(ScSpecTypeDef::ScSpecTypeTuple(Box::new(ScSpecTypeTuple::from_xdr_buffered(read_stream)?))),
             ScSpecType::ScSpecTypeBytesN =>
-                Ok(ScSpecTypeDef::ScSpecTypeBytesN(ScSpecTypeBytesN::from_xdr_buffered(read_stream)?)),
+                Ok(ScSpecTypeDef::ScSpecTypeBytesN(Box::new(ScSpecTypeBytesN::from_xdr_buffered(read_stream)?))),
             ScSpecType::ScSpecTypeUdt =>
-                Ok(ScSpecTypeDef::ScSpecTypeUdt(ScSpecTypeUdt::from_xdr_buffered(read_stream)?)),
+                Ok(ScSpecTypeDef::ScSpecTypeUdt(Box::new(ScSpecTypeUdt::from_xdr_buffered(read_stream)?))),
         }
     }
 }
