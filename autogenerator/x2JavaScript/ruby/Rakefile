@@ -13,6 +13,10 @@ namespace :xdr do
                  "Stellar-ledger.x",
                  "Stellar-overlay.x",
                  "Stellar-SCP.x",
+                 "Stellar-internal.x",
+                 "Stellar-contract-config-setting.x",
+                 "Stellar-contract.x"
+                 
                 ]
 
   task :update => [:download, :generate]

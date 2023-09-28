@@ -12,12 +12,17 @@ const outputPath: string = process.env.DESTINATION;
 initializeOutputPath(outputPath);
 
 export function config(definitionFactory: DefinitionFactory) {
+
+
   const constants: Record<string, number> = {};
   const types: Record<string, XdrType> = {};
 
   const unions: Array<{ name: string; unionDefinition: UnionDefinition }> = [];
 
   definitionFactory({
+    const: (name, value) => {
+      constants[name] = value;
+    },
     typedef: (name, type) => {
       types[name] = type;
     },
@@ -34,10 +39,6 @@ export function config(definitionFactory: DefinitionFactory) {
       // postpone construction of union type because we need to make sure
       // that all enums are already defined
       unions.push({ name, unionDefinition });
-    },
-
-    const: (name, value) => {
-      constants[name] = value;
     },
 
     lookup: (name) => ({ type: "reference", name }),

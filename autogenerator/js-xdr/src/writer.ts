@@ -18,20 +18,11 @@ function determineMainTypes(types: Record<string, XdrType>) {
 
   while (true) {
     const typeName = remaining.pop();
-    console.log(typeName);
     if (typeName === undefined) return mainTypes;
-
-    //HOTFIX
-    if (types[typeName] === undefined) {
-      console.log("ignoring", typeName);
-      continue;
-    }
+    mainTypes.add(typeName);
 
     Object.keys(determineDependencies(types[typeName])).forEach((key) => {
       if (!mainTypes.has(key) && remaining.indexOf(key) === -1) {
-        if (key == "SorobanAuthorizedInvocation" || key == "ClaimPredicateType" || key == "ClaimPredicate") {
-          return
-        }
         remaining.push(key);
       }
     });
