@@ -873,7 +873,7 @@ impl XdrCodec for ScSpecType {
 #[cfg(feature = "all-types")]
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ScSpecTypeOption {
-    pub value_type: ScSpecTypeDef,
+    pub value_type: Box<ScSpecTypeDef>,
 }
 
 #[cfg(feature = "all-types")]
@@ -8120,7 +8120,7 @@ pub enum ScSpecTypeDef {
     ScSpecTypeString,
     ScSpecTypeSymbol,
     ScSpecTypeAddress,
-    ScSpecTypeOption(ScSpecTypeOption),
+    ScSpecTypeOption(Box<ScSpecTypeOption>),
     ScSpecTypeResult(ScSpecTypeResult),
     ScSpecTypeVec(ScSpecTypeVec),
     ScSpecTypeMap(ScSpecTypeMap),
