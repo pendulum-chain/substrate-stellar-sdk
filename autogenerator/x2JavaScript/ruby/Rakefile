@@ -7,12 +7,12 @@ namespace :xdr do
   # Prior to launch, we should be separating our .x files into a separate
   # repo, and should be able to improve this integration.
   HAYASHI_XDR = [
-                 "src/protocol-curr/xdr/Stellar-types.x",
-                 "src/protocol-curr/xdr/Stellar-ledger-entries.x",
-                 "src/protocol-curr/xdr/Stellar-transaction.x",
-                 "src/protocol-curr/xdr/Stellar-ledger.x",
-                 "src/protocol-curr/xdr/Stellar-overlay.x",
-                 "src/protocol-curr/xdr/Stellar-SCP.x",
+                 "Stellar-types.x",
+                 "Stellar-ledger-entries.x",
+                 "Stellar-transaction.x",
+                 "Stellar-ledger.x",
+                 "Stellar-overlay.x",
+                 "Stellar-SCP.x",
                 ]
 
   task :update => [:download, :generate]
@@ -28,7 +28,7 @@ namespace :xdr do
 
     HAYASHI_XDR.each do |src|
       local_path = "xdr/" + File.basename(src)
-      encoded    = client.contents("stellar/stellar-core", path: src).content
+      encoded    = client.contents("stellar/stellar-xdr", path: src).content
       decoded    = Base64.decode64 encoded
 
       IO.write(local_path, decoded)

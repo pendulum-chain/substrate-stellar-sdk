@@ -1,9 +1,0 @@
-{
-  "name": "js-xdr",
-  "version": "0.1.0",
-  "description": "",
-  "main": "src/index.ts",
-  "scripts": {},
-  "author": "SatoshiPay Ltd.",
-  "license": "Apache-2.0"
-}
