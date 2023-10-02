@@ -6,7 +6,7 @@
   "types": "./lib/index.d.ts",
   "scripts": {
     "download-x": "cd x2JavaScript && ./generate && cd ..",
-    "generate": "npm run generate-all-types && npm run format",
+    "generate": "npm run generate-all-types && npm run format && node post-process.js ",
     "generate-all-types": "DESTINATION=../src/xdr MAIN_FILE_NAME=types.rs npx ts-node x2JavaScript/generated/stellar-xdr_generated.ts",
     "format": "rustfmt ../src/xdr/types.rs",
     "build": "npm run download-x && npm run generate"
