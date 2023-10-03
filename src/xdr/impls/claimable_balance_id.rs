@@ -17,3 +17,18 @@ impl<T: AsRef<[u8]>> IntoClaimbleBalanceId for AsBinary<T> {
         ClaimableBalanceId::from_xdr(balance_id).map_err(|_| StellarSdkError::InvalidBalanceId)
     }
 }
+
+#[cfg(feature = "std")]
+impl<E: From<std::str::Utf8Error>> crate::StellarTypeToString<Self, E> for ClaimableBalanceId {
+    fn as_encoded_string(&self) -> Result<String, E> {
+        let xdr = self.to_xdr();
+        Ok(hex::encode(xdr))
+    }
+}
+
+#[cfg(feature = "std")]
+impl<E: From<std::str::Utf8Error>> crate::StellarTypeToString<ClaimableBalanceId, E> for &str {
+    fn as_encoded_string(&self) -> Result<String, E> {
+        Ok(self.to_string())
+    }
+}

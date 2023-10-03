@@ -44,6 +44,9 @@ pub use xdr::{
     xdr_codec::XdrCodec,
 };
 
+#[cfg(feature = "std")]
+pub use utils::std::StellarTypeToString;
+
 pub use amount::*;
 pub use binary::*;
 pub use public_key::*;
