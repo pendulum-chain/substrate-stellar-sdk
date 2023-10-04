@@ -4,8 +4,6 @@ pub mod transaction_envelope;
 
 #[cfg(feature = "all-types")]
 pub mod generalized_transaction_set;
-#[cfg(feature = "all-types")]
-pub mod transaction_set;
 
 pub mod account_id;
 pub mod asset;
