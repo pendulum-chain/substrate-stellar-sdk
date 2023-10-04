@@ -53,10 +53,8 @@ pub enum StellarSdkError {
 
     InvalidHexEncoding(FromHexError),
 
-    InvalidHashLength {
-        found_length: usize,
-        expected_length: usize,
-    },
+    #[cfg(feature = "std")]
+    InvalidHashConversion(String),
 
     NotApproximableAsFraction,
 

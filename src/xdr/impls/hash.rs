@@ -19,14 +19,9 @@ impl<T: AsRef<[u8]>> IntoHash for AsBinary<T> {
     }
 }
 
-/// Returns the hash of the Stellar object
-pub trait ComputeHash {
-    fn compute_hash(&self) -> Option<Hash>;
-}
-
 #[cfg(all(feature = "all-types", feature = "std"))]
-impl ComputeHash for GeneralizedTransactionSet {
-    fn compute_hash(&self) -> Option<Hash> {
+impl IntoHash for GeneralizedTransactionSet {
+    fn into_hash(self) -> Result<Hash, StellarSdkError> {
         use crate::XdrCodec;
         use sha2::{Digest, Sha256};
         use std::convert::TryInto;
@@ -34,13 +29,17 @@ impl ComputeHash for GeneralizedTransactionSet {
         let mut hasher = Sha256::new();
         hasher.update(self.to_xdr());
 
-        hasher.finalize().as_slice().try_into().ok()
+        hasher
+            .finalize()
+            .as_slice()
+            .try_into()
+            .map_err(|e: std::array::TryFromSliceError| StellarSdkError::InvalidHashConversion(e.to_string()))
     }
 }
 
 #[cfg(all(feature = "all-types", feature = "std"))]
-impl ComputeHash for TransactionSet {
-    fn compute_hash(&self) -> Option<Hash> {
+impl IntoHash for TransactionSet {
+    fn into_hash(self) -> Result<Hash, StellarSdkError> {
         use crate::XdrCodec;
         use sha2::{Digest, Sha256};
         use std::convert::TryInto;
@@ -52,6 +51,10 @@ impl ComputeHash for TransactionSet {
             hasher.update(envlp.to_xdr());
         });
 
-        hasher.finalize().as_slice().try_into().ok()
+        hasher
+            .finalize()
+            .as_slice()
+            .try_into()
+            .map_err(|e: std::array::TryFromSliceError| StellarSdkError::InvalidHashConversion(e.to_string()))
     }
 }
