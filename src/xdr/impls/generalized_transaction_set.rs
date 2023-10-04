@@ -1,8 +1,25 @@
 use crate::{
     compound_types::UnlimitedVarArray,
     types::{GeneralizedTransactionSet, TransactionPhase, TxSetComponent},
-    Hash, TransactionEnvelope, XdrCodec,
+    Hash, IntoHash, StellarSdkError, TransactionEnvelope, XdrCodec,
 };
+
+#[cfg(feature = "std")]
+impl IntoHash for GeneralizedTransactionSet {
+    fn into_hash(self) -> Result<Hash, StellarSdkError> {
+        use sha2::{Digest, Sha256};
+        use std::convert::TryInto;
+
+        let mut hasher = Sha256::new();
+        hasher.update(self.to_xdr());
+
+        hasher
+            .finalize()
+            .as_slice()
+            .try_into()
+            .map_err(|e: std::array::TryFromSliceError| StellarSdkError::InvalidHashConversion(e.to_string()))
+    }
+}
 
 impl GeneralizedTransactionSet {
     #[cfg(feature = "std")]
