@@ -1,8 +1,8 @@
 //this script will read any definition of the form xdr.const("CONST_NAME", VALUE), 
 //and define it on top of the .ts file for other types to use.
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 
 const filePath = path.join(__dirname, 'x2JavaScript/generated/stellar-xdr_generated.ts');
@@ -17,7 +17,7 @@ while ((match = regex.exec(content)) !== null) {
     constDefinitions += `const ${constName} = ${constValue};\n`;
 }
 
-const newContent = constDefinitions + '\n' + content;
+const newContent = constDefinitions + `\n` + content;
 
 
 const newFilePath = path.join(__dirname, 'x2JavaScript/generated/stellar-xdr_generated.ts');

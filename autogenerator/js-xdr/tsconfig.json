@@ -2,7 +2,10 @@
   "compilerOptions": {
     "outDir": "./dist",
     "allowJs": false,
-    "lib": ["es2018", "dom"],
+    "lib": [
+      "es2018",
+      "dom"
+    ],
     "module": "commonjs",
     "target": "ES6",
     "strict": true,
@@ -12,6 +15,7 @@
     "noUnusedParameters": true
   },
   "include": [
-    "./src/**/*"
+    "./src/**/*",
+    "./types/**/*"
   ],
 }
