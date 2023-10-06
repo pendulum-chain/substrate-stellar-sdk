@@ -5,11 +5,12 @@
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "scripts": {
+    "build-js-xdr": "cd js-xdr && npm run build",
     "download-x": "cd x2JavaScript && ./generate && cd ..",
-    "generate": "npx ts-node post-process.ts && npm run generate-all-types && npm run format",
+    "generate": "npx ts-node declare-constants.ts && npm run generate-all-types && npm run format",
     "generate-all-types": "DESTINATION=../src/xdr MAIN_FILE_NAME=types.rs npx ts-node x2JavaScript/generated/stellar-xdr_generated.ts",
     "format": "rustfmt ../src/xdr/types.rs",
-    "build": "npm run download-x && npm run generate"
+    "build": "npm run build-js-xdr && npm run download-x && npm run generate"
   },
   "author": "SatoshiPay Ltd",
   "license": "Apache-2.0",
