@@ -1,11 +1,13 @@
 {
   "compilerOptions": {
-    "outDir": "./dist",
+    "outDir": "dist",
     "allowJs": false,
     "lib": [
       "es2018",
       "dom"
     ],
+    "declaration": true,
+    "declarationDir": "dist/types",
     "module": "commonjs",
     "target": "ES6",
     "strict": true,
@@ -18,4 +20,7 @@
     "./src/**/*",
     "./types/**/*"
   ],
+  "types": [
+    "node"
+  ]
 }
