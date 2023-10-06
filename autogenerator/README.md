@@ -15,10 +15,24 @@ NodeJs, NPM, Docker, Cargo (for formatting)
 This downloads the latest version of Stellar XDR type specification and generates
 according Rust code
 
-```
-npm install
-npm run build
-```
+Install all the necessary dependencies by running: 
+
+``` 
+cd autogenerator/js-xdr 
+npm install 
+``` 
+
+ And   
+ 
+ ``` 
+ cd autogenerator 
+ npm install 
+ 
+ ``` 
+ 
+Then run `npm run build` which will take care of building `js-xdr`, pulling the latest types, and generating the types.rs file.
+
+
 
 ### How it works
 
