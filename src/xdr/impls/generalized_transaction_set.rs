@@ -1,14 +1,14 @@
 use crate::{
+    lib::{String, FromUtf8Error},
     compound_types::UnlimitedVarArray,
     types::{GeneralizedTransactionSet, TransactionPhase, TxSetComponent},
     Hash, IntoHash, StellarSdkError, TransactionEnvelope, XdrCodec,
 };
 
-#[cfg(feature = "std")]
 impl IntoHash for GeneralizedTransactionSet {
     fn into_hash(self) -> Result<Hash, StellarSdkError> {
         use sha2::{Digest, Sha256};
-        use std::convert::TryInto;
+        use sp_std::convert::TryInto;
 
         let mut hasher = Sha256::new();
         hasher.update(self.to_xdr());
@@ -17,13 +17,12 @@ impl IntoHash for GeneralizedTransactionSet {
             .finalize()
             .as_slice()
             .try_into()
-            .map_err(|e: std::array::TryFromSliceError| StellarSdkError::InvalidHashConversion(e.to_string()))
+            .map_err(|_| StellarSdkError::InvalidHashConversion)
     }
 }
 
 impl GeneralizedTransactionSet {
-    #[cfg(feature = "std")]
-    pub fn to_base64_encoded_xdr_string(&self) -> Result<String, std::string::FromUtf8Error> {
+    pub fn to_base64_encoded_xdr_string(&self) -> Result<String, FromUtf8Error> {
         let base_64 = self.clone().to_base64_xdr();
         String::from_utf8(base_64)
     }
