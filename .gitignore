@@ -10,3 +10,7 @@
 /autogenerator/lib
 /autogenerator/static/target
 /autogenerator/test/target
+
+**/yarn.lock
+**/package-lock.json
+**/*.yarn-integrity
