@@ -7,10 +7,10 @@
 extern crate alloc;
 
 mod lib {
-    #[cfg(all(not(feature = "std"), feature = "offchain"))]
-    pub use alloc::string::String;
+    #[cfg(not(feature = "std"))]
+    pub use alloc::string::{String, ToString, FromUtf8Error};
     #[cfg(feature = "std")]
-    pub use std::string::String;
+    pub use std::string::{String, ToString, FromUtf8Error};
 }
 
 mod amount;
@@ -44,7 +44,6 @@ pub use xdr::{
     xdr_codec::XdrCodec,
 };
 
-#[cfg(feature = "std")]
 pub use utils::std::StellarTypeToString;
 
 pub use amount::*;

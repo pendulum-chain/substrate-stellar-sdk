@@ -1,4 +1,5 @@
 use crate::{AsBinary, ClaimableBalanceId, StellarSdkError, XdrCodec};
+use crate::lib::{String, ToString};
 
 pub trait IntoClaimbleBalanceId {
     fn into_claimable_balance_id(self) -> Result<ClaimableBalanceId, StellarSdkError>;
@@ -18,16 +19,14 @@ impl<T: AsRef<[u8]>> IntoClaimbleBalanceId for AsBinary<T> {
     }
 }
 
-#[cfg(feature = "std")]
-impl<E: From<std::str::Utf8Error>> crate::StellarTypeToString<Self, E> for ClaimableBalanceId {
+impl<E: From<sp_std::str::Utf8Error>> crate::StellarTypeToString<Self, E> for ClaimableBalanceId {
     fn as_encoded_string(&self) -> Result<String, E> {
         let xdr = self.to_xdr();
         Ok(hex::encode(xdr))
     }
 }
 
-#[cfg(feature = "std")]
-impl<E: From<std::str::Utf8Error>> crate::StellarTypeToString<ClaimableBalanceId, E> for &str {
+impl<E: From<sp_std::str::Utf8Error>> crate::StellarTypeToString<ClaimableBalanceId, E> for &str {
     fn as_encoded_string(&self) -> Result<String, E> {
         Ok(self.to_string())
     }

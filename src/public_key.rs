@@ -3,13 +3,13 @@ use core::convert::TryInto;
 use sp_std::{vec, vec::Vec};
 
 use crate::{
+    lib::{String, ToString},
     utils::key_encoding::{
         decode_stellar_key, encode_stellar_key, ED25519_PUBLIC_KEY_BYTE_LENGTH, ED25519_PUBLIC_KEY_VERSION_BYTE,
     },
     PublicKey, StellarSdkError, XdrCodec,
 };
 
-#[cfg(feature = "std")]
 use crate::utils::std::StellarTypeToString;
 
 use sodalite::{sign_attached_open, Sign as Signature, SIGN_LEN};
@@ -30,26 +30,23 @@ impl<T: AsRef<[u8]>> IntoPublicKey for T {
     }
 }
 
-#[cfg(feature = "std")]
-impl<E: From<std::str::Utf8Error>> StellarTypeToString<Self, E> for PublicKey {
+impl<E: From<sp_std::str::Utf8Error>> StellarTypeToString<Self, E> for PublicKey {
     fn as_encoded_string(&self) -> Result<String, E> {
         let x = self.to_encoding();
-        let str = std::str::from_utf8(&x).map_err(E::from)?;
+        let str = sp_std::str::from_utf8(&x).map_err(E::from)?;
         Ok(str.to_string())
     }
 }
 
-#[cfg(feature = "std")]
-impl<E: From<std::str::Utf8Error>> StellarTypeToString<PublicKey, E> for &str {
+impl<E: From<sp_std::str::Utf8Error>> StellarTypeToString<PublicKey, E> for &str {
     fn as_encoded_string(&self) -> Result<String, E> {
         Ok(self.to_string())
     }
 }
 
-#[cfg(feature = "std")]
-impl<E: From<std::str::Utf8Error>> StellarTypeToString<PublicKey, E> for Vec<u8> {
+impl<E: From<sp_std::str::Utf8Error>> StellarTypeToString<PublicKey, E> for Vec<u8> {
     fn as_encoded_string(&self) -> Result<String, E> {
-        let str = std::str::from_utf8(self).map_err(E::from)?;
+        let str = sp_std::str::from_utf8(self).map_err(E::from)?;
         Ok(str.to_string())
     }
 }
