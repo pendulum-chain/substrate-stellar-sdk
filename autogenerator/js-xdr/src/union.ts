@@ -22,6 +22,7 @@ export type UnionDefinition = {
 };
 
 export function processUnion(name: string, unionDefinition: UnionDefinition, resolvedSwitchType: XdrType): UnionType {
+
   const subTypes: string[] = [];
   const subReaders: string[] = [];
   const subWriters: string[] = [];
@@ -56,13 +57,27 @@ export function processUnion(name: string, unionDefinition: UnionDefinition, res
         ? `Option::<Box<${name}>>`
         : determineFullyQualifiedTypeReference(type);
 
-      subTypes.push(`    ${caseIdentifier}(${typeReference})`);
+      const mustBeBoxed = fullyQualifiedTypeReference.startsWith("ScSpecType");
+      if (mustBeBoxed) {
+        subTypes.push(`    ${caseIdentifier}(Box<${typeReference}>)`);
+      } else {
+        subTypes.push(`    ${caseIdentifier}(${typeReference})`);
+      }
+
+
       subWriters.push(
         `            ${name}::${caseIdentifier}(value) => {${fieldName}.to_xdr_buffered(write_stream); value.to_xdr_buffered(write_stream)},`
       );
-      subReaders.push(
-        `            ${simpleFieldName} => Ok(${name}::${caseIdentifier}(${fullyQualifiedTypeReference}::from_xdr_buffered(read_stream)?)),`
-      );
+      if (mustBeBoxed) {
+        subReaders.push(
+          `            ${simpleFieldName} => Ok(${name}::${caseIdentifier}(Box::new(${fullyQualifiedTypeReference}::from_xdr_buffered(read_stream)?))),`
+        );
+      } else {
+        subReaders.push(
+          `            ${simpleFieldName} => Ok(${name}::${caseIdentifier}(${fullyQualifiedTypeReference}::from_xdr_buffered(read_stream)?)),`
+        );
+      }
+
     } else {
       subTypes.push(`    ${caseIdentifier}`);
       subWriters.push(`            ${name}::${caseIdentifier} => ${fieldName}.to_xdr_buffered(write_stream),`);
