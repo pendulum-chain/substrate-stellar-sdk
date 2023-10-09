@@ -8,6 +8,9 @@ pub mod generalized_transaction_set;
 #[cfg(feature = "all-types")]
 pub mod transaction_set;
 
+#[cfg(feature = "all-types")]
+pub mod transaction_set_type;
+
 pub mod account_id;
 pub mod asset;
 pub mod asset_code;
@@ -22,3 +25,4 @@ pub mod price;
 pub mod signer;
 pub mod signer_key;
 pub mod time_bounds;
+
