@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::{Hash, IntoHash, ReadStream, TransactionEnvelope, WriteStream, XdrCodec};
 use crate::compound_types::UnlimitedVarArray;
 use crate::types::{GeneralizedTransactionSet, TransactionSet};
@@ -10,13 +11,11 @@ pub enum TransactionSetType {
 
 impl TransactionSetType {
     pub fn get_tx_set_hash(&self) -> Result<Hash, ()> {
-        use substrate_stellar_sdk::IntoHash;
         match self {
             TransactionSetType::TransactionSet(tx_set) =>
                 tx_set.clone().into_hash().map_err(|_| ()),
             TransactionSetType::GeneralizedTransactionSet(tx_set) =>
                 tx_set.clone().into_hash().map_err(|_| ()),
-            _ => Err(()),
         }
     }
 
@@ -24,7 +23,6 @@ impl TransactionSetType {
         let txes_option = match self {
             TransactionSetType::TransactionSet(tx_set) => Some(tx_set.txes.clone()),
             TransactionSetType::GeneralizedTransactionSet(tx_set) => tx_set.txes(),
-            _ => None,
         };
 
         txes_option.unwrap_or_else(UnlimitedVarArray::new_empty)
