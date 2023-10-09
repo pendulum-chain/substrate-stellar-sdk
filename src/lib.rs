@@ -45,7 +45,7 @@ pub use xdr::{
 };
 
 #[cfg(feature = "all-types")]
-pub use xdr::impls::transaction_set_type::TransactionSetType;
+pub use xdr::impls::transaction_set_type::*;
 
 pub use utils::std::StellarTypeToString;
 
