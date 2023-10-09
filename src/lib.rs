@@ -44,6 +44,9 @@ pub use xdr::{
     xdr_codec::XdrCodec,
 };
 
+#[cfg(feature = "all-types")]
+pub use xdr::impls::transaction_set_type::TransactionSetType;
+
 pub use utils::std::StellarTypeToString;
 
 pub use amount::*;
