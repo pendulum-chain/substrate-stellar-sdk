@@ -11,7 +11,24 @@ pub enum TransactionSetType {
     GeneralizedTransactionSet(GeneralizedTransactionSet),
 }
 
+pub trait InitExt<T> {
+    fn new(tx_set:T) -> Self;
+}
+
+impl InitExt<TransactionSet> for TransactionSetType {
+    fn new(tx_set: TransactionSet) -> Self {
+        Self::TransactionSet(tx_set)
+    }
+}
+
+impl InitExt<GeneralizedTransactionSet> for TransactionSetType {
+    fn new(tx_set: GeneralizedTransactionSet) -> Self {
+        Self::GeneralizedTransactionSet(tx_set)
+    }
+}
+
 impl TransactionSetType {
+
     pub fn get_tx_set_hash(&self) -> Result<Hash, ()> {
         match self {
             TransactionSetType::TransactionSet(tx_set) =>
