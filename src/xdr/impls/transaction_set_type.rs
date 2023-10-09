@@ -4,6 +4,8 @@ use crate::compound_types::UnlimitedVarArray;
 use crate::types::{GeneralizedTransactionSet, TransactionSet};
 use crate::xdr::streams::DecodeError;
 
+
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum TransactionSetType {
     TransactionSet(TransactionSet),
     GeneralizedTransactionSet(GeneralizedTransactionSet),
