@@ -3,11 +3,14 @@ use core::convert::TryInto;
 use sp_std::{vec, vec::Vec};
 
 use crate::{
+    lib::{String, ToString},
     utils::key_encoding::{
         decode_stellar_key, encode_stellar_key, ED25519_PUBLIC_KEY_BYTE_LENGTH, ED25519_PUBLIC_KEY_VERSION_BYTE,
     },
     PublicKey, StellarSdkError, XdrCodec,
 };
+
+use crate::utils::std::StellarTypeToString;
 
 use sodalite::{sign_attached_open, Sign as Signature, SIGN_LEN};
 
@@ -24,6 +27,27 @@ impl IntoPublicKey for PublicKey {
 impl<T: AsRef<[u8]>> IntoPublicKey for T {
     fn into_public_key(self) -> Result<PublicKey, StellarSdkError> {
         PublicKey::from_encoding(self)
+    }
+}
+
+impl<E: From<sp_std::str::Utf8Error>> StellarTypeToString<Self, E> for PublicKey {
+    fn as_encoded_string(&self) -> Result<String, E> {
+        let x = self.to_encoding();
+        let str = sp_std::str::from_utf8(&x).map_err(E::from)?;
+        Ok(str.to_string())
+    }
+}
+
+impl<E: From<sp_std::str::Utf8Error>> StellarTypeToString<PublicKey, E> for &str {
+    fn as_encoded_string(&self) -> Result<String, E> {
+        Ok(self.to_string())
+    }
+}
+
+impl<E: From<sp_std::str::Utf8Error>> StellarTypeToString<PublicKey, E> for Vec<u8> {
+    fn as_encoded_string(&self) -> Result<String, E> {
+        let str = sp_std::str::from_utf8(self).map_err(E::from)?;
+        Ok(str.to_string())
     }
 }
 
