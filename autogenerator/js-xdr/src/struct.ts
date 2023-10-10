@@ -15,6 +15,7 @@ export function processStruct(name: string, structDefinition: StructDefinition):
   const subWriters: string[] = [];
   let dependencies: Record<string, true> = {};
 
+  let isFirstProperty = true;
   structDefinition.forEach((entry) => {
     const [key, type] = entry;
     let stringifiedKey = snakeCase(key);
@@ -22,14 +23,30 @@ export function processStruct(name: string, structDefinition: StructDefinition):
     const isOptionalCycle =
       type.type === "option" && type.innerType.type === "reference" && type.innerType.name === name;
 
+    const mustBeBoxed = name.startsWith("ScSpecType");
+
     const typeReference = isOptionalCycle ? `Option<Box<${name}>>` : determineTypeReference(type);
     const fullyQualifiedTypeReference = isOptionalCycle
       ? `Option::<Box<${name}>>`
       : determineFullyQualifiedTypeReference(type);
 
-    subTypes.push(`    pub ${stringifiedKey}: ${typeReference}`);
+    //here, if subType is cyclical insert a box. How do we realize??
+    //introduce Box struct references a non-primitive type that is not wrapped into a Vec
+    if (mustBeBoxed && isFirstProperty) {
+      subTypes.push(`    pub ${stringifiedKey}: Box<${typeReference}>`);
+    } else {
+      subTypes.push(`    pub ${stringifiedKey}: ${typeReference}`);
+    }
+
     subWriters.push(`        self.${stringifiedKey}.to_xdr_buffered(write_stream);`);
-    subReaders.push(`            ${stringifiedKey}: ${fullyQualifiedTypeReference}::from_xdr_buffered(read_stream)?,`);
+
+    if (mustBeBoxed && isFirstProperty) {
+      subReaders.push(`            ${stringifiedKey}: Box::new(${fullyQualifiedTypeReference}::from_xdr_buffered(read_stream)?),`);
+      isFirstProperty = false;
+    } else {
+      subReaders.push(`            ${stringifiedKey}: ${fullyQualifiedTypeReference}::from_xdr_buffered(read_stream)?,`);
+    }
+
     dependencies = { ...dependencies, ...determineDependencies(type) };
   });
 
