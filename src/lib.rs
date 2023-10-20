@@ -47,6 +47,9 @@ pub use xdr::{
 #[cfg(feature = "all-types")]
 pub use xdr::impls::transaction_set_type::*;
 
+#[cfg(feature = "all-types")]
+pub use xdr::impls::error::*;
+
 pub use utils::std::StellarTypeToString;
 
 pub use amount::*;
