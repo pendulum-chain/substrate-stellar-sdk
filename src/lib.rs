@@ -48,7 +48,7 @@ pub use xdr::{
 pub use xdr::impls::transaction_set_type::*;
 
 pub use utils::std::StellarTypeToString;
-
+pub use utils::key_encoding::*;
 pub use amount::*;
 pub use binary::*;
 pub use public_key::*;
