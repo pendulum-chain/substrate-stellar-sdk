@@ -2226,6 +2226,7 @@ dependencies = [
  "hex",
  "lazy_static",
  "num-rational",
+ "scale-info",
  "serde",
  "serde_json",
  "sha2 0.9.9",
