@@ -22,7 +22,7 @@ sha2 = { default-features = false, version = "0.9.9" }
 lazy_static = { version = "1.4.0", features = ["spin_no_std"] }
 base64 = { default-features = false, version = "0.13.0" }
 num-rational = {version = "0.4", default-features = false}
-
+scale-info = {version = "2.1.1", default-features = false, features = ["derive"]}
 
 [features]
 default = [ "offchain", "std" ]
@@ -34,6 +34,7 @@ std = [
   "sp-io/std",
   "serde_json/std",
   "serde/std",
+  "scale-info/std",
   "hex/std",
   "num-rational/std"
 ]
