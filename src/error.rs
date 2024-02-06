@@ -86,4 +86,6 @@ pub enum StellarSdkError {
 
     #[cfg(feature = "offchain")]
     FetchError(FetchError),
+
+    DecodeError(Vec<u8>), // String converted as Bytes of u8
 }
