@@ -1,4 +1,3 @@
-#[allow(dead_code)]
 use sp_std::vec::Vec;
 
 use core::convert::AsRef;
