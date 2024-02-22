@@ -48,6 +48,18 @@ impl TransactionSetType {
     }
 }
 
+impl From<TransactionSet> for TransactionSetType {
+    fn from(value: TransactionSet) -> Self {
+        TransactionSetType::TransactionSet(value)
+    }
+}
+
+impl From<GeneralizedTransactionSet> for TransactionSetType {
+    fn from(value: GeneralizedTransactionSet) -> Self {
+        TransactionSetType::GeneralizedTransactionSet(value)
+    }
+}
+
 impl XdrCodec for TransactionSetType {
     fn to_xdr_buffered(&self, write_stream: &mut WriteStream) {
         match self {
