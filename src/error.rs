@@ -4,6 +4,8 @@ use hex::FromHexError;
 #[cfg(feature = "offchain")]
 use crate::horizon::FetchError;
 
+use sp_std::vec::Vec;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum StellarSdkError {
     InvalidBase32Character {
@@ -86,4 +88,6 @@ pub enum StellarSdkError {
 
     #[cfg(feature = "offchain")]
     FetchError(FetchError),
+
+    DecodeError(Vec<u8>), // String converted as Bytes of u8
 }

@@ -203,3 +203,26 @@ impl<T: XdrCodec> XdrCodec for Box<T> {
         Ok(Box::new(T::from_xdr_buffered(read_stream)?))
     }
 }
+
+/// To easily convert any bytes to a Stellar type.
+///
+/// # Examples
+///
+/// Basic usage:
+///
+/// ```
+/// use crate::types::Auth;
+/// let auth_xdr =  [0, 0, 0, 1];
+/// let result = parse_stellar_type!(auth_xdr,Auth);
+/// assert_eq!(result, Ok(Auth { flags: 1 }))
+/// ```
+#[macro_export]
+macro_rules! parse_stellar_type {
+    ($ref:ident, $struct_str:ident) => {{
+        use $crate::{types::$struct_str, StellarSdkError};
+
+        let ret: Result<$struct_str, StellarSdkError> =
+            $struct_str::from_xdr($ref).map_err(|_| StellarSdkError::DecodeError(stringify!($struct_str).into()));
+        ret
+    }};
+}
