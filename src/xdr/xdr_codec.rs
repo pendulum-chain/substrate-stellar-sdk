@@ -210,8 +210,9 @@ impl<T: XdrCodec> XdrCodec for Box<T> {
 ///
 /// Basic usage:
 ///
-/// ```
-/// use crate::types::Auth;
+#[cfg_attr(feature = "all-types", doc = "```")]
+#[cfg_attr(not(feature = "all-types"), doc = "```ignore")]
+/// use substrate_stellar_sdk::{types::Auth, parse_stellar_type};
 /// let auth_xdr =  [0, 0, 0, 1];
 /// let result = parse_stellar_type!(auth_xdr,Auth);
 /// assert_eq!(result, Ok(Auth { flags: 1 }))
@@ -219,7 +220,7 @@ impl<T: XdrCodec> XdrCodec for Box<T> {
 #[macro_export]
 macro_rules! parse_stellar_type {
     ($ref:ident, $struct_str:ident) => {{
-        use $crate::{types::$struct_str, StellarSdkError};
+        use $crate::{types::$struct_str, StellarSdkError, XdrCodec};
 
         let ret: Result<$struct_str, StellarSdkError> =
             $struct_str::from_xdr($ref).map_err(|_| StellarSdkError::DecodeError(stringify!($struct_str).into()));

@@ -8,9 +8,9 @@ extern crate alloc;
 
 mod lib {
     #[cfg(not(feature = "std"))]
-    pub use alloc::string::{String, ToString, FromUtf8Error};
+    pub use alloc::string::{FromUtf8Error, String, ToString};
     #[cfg(feature = "std")]
-    pub use std::string::{String, ToString, FromUtf8Error};
+    pub use std::string::{FromUtf8Error, String, ToString};
 }
 
 mod amount;

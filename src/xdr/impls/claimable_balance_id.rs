@@ -1,5 +1,7 @@
-use crate::{AsBinary, ClaimableBalanceId, StellarSdkError, XdrCodec};
-use crate::lib::{String, ToString};
+use crate::{
+    lib::{String, ToString},
+    AsBinary, ClaimableBalanceId, StellarSdkError, XdrCodec,
+};
 
 pub trait IntoClaimbleBalanceId {
     fn into_claimable_balance_id(self) -> Result<ClaimableBalanceId, StellarSdkError>;

@@ -1,6 +1,6 @@
 use crate::{
-    lib::{String, FromUtf8Error},
     compound_types::UnlimitedVarArray,
+    lib::{FromUtf8Error, String},
     types::{GeneralizedTransactionSet, TransactionPhase, TxSetComponent},
     Hash, IntoHash, StellarSdkError, TransactionEnvelope, XdrCodec,
 };

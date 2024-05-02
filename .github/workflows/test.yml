@@ -1,9 +1,9 @@
 on:
   pull_request:
     branches:
-      - '**'
+      - 'polkadot-v0.9.42'
 
-name: continuous-integration-test
+name: continuous-integration-cargo-test
 jobs:
   ci:
     runs-on: ubuntu-20.04
@@ -44,7 +44,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           cache-on-failure: true
-          key: "ubuntu-20.04-cargo-${{ hashFiles('**/Cargo.lock') }}"
+          key: "ubuntu-latest-cargo-${{ hashFiles('**/Cargo.lock') }}"
           shared-key: "shared"
 
       - name: Install Protoc
@@ -62,4 +62,4 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --all-features
+          args: --all --all-features
