@@ -209,7 +209,9 @@ impl<T: XdrCodec> XdrCodec for Box<T> {
 /// # Examples
 ///
 /// Basic usage:
-///
+/// // For this test, we require the usage of `Auth` which is only compiled with
+/// // the `all-types` feature.
+/// // We will ignore the test if the feature is not enabled.
 #[cfg_attr(feature = "all-types", doc = "```")]
 #[cfg_attr(not(feature = "all-types"), doc = "```ignore")]
 /// use substrate_stellar_sdk::{types::Auth, parse_stellar_type};
