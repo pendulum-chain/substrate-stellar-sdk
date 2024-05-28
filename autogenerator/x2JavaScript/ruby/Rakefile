@@ -20,7 +20,7 @@ namespace :xdr do
                  "Stellar-contract-env-meta.x",
                  "Stellar-contract-meta.x",
                  "Stellar-contract-spec.x"
-                 
+
                 ]
 
   task :update => [:download, :generate]
