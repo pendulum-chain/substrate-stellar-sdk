@@ -11,6 +11,7 @@ mod lib {
     pub use alloc::string::{FromUtf8Error, String, ToString};
 
     #[cfg(feature = "std")]
+    #[allow(unused_imports)]
     pub use std::string::{FromUtf8Error, String, ToString};
 }
 
