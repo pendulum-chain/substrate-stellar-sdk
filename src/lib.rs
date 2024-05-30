@@ -9,7 +9,9 @@ extern crate alloc;
 mod lib {
     #[cfg(not(feature = "std"))]
     pub use alloc::string::{FromUtf8Error, String, ToString};
+
     #[cfg(feature = "std")]
+    #[allow(unused_imports)]
     pub use std::string::{FromUtf8Error, String, ToString};
 }
 
@@ -48,6 +50,7 @@ pub use xdr::{
 pub use xdr::impls::transaction_set_type::*;
 
 #[cfg(feature = "all-types")]
+#[allow(unused_imports)]
 pub use xdr::impls::error::*;
 
 pub use utils::std::StellarTypeToString;
