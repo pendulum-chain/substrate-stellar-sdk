@@ -175,6 +175,10 @@ impl<T, const N: i32> LimitedVarArray<T, N> {
         self.0.push(item);
         Ok(())
     }
+
+    pub fn pop(&mut self) -> Option<T> {
+        self.0.pop()
+    }
 }
 
 impl<T: XdrCodec, const N: i32> XdrCodec for LimitedVarArray<T, N> {
@@ -294,5 +298,15 @@ mod tests {
             ]
         );
         assert_eq!(XdrArchive::<LimitedVarArray<Price, 10>>::from_xdr(encoded).unwrap(), xdr_archive)
+    }
+
+    #[test]
+    fn pop_limitedarray() {
+        let sample_vec = vec![0,1,2,3,4];
+        let mut sample_limited_array = LimitedVarArray::<u8,5>::new(sample_vec).expect("should return just fine");
+        let len = sample_limited_array.len();
+        let popped = sample_limited_array.pop();
+        assert_eq!(popped, Some(4));
+        assert_ne!(sample_limited_array.len(), len);
     }
 }
