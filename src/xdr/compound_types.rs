@@ -179,6 +179,11 @@ impl<T, const N: i32> LimitedVarArray<T, N> {
     pub fn pop(&mut self) -> Option<T> {
         self.0.pop()
     }
+
+    pub fn get_element<P>(&self, mut predicate:P) -> Option<&T>
+    where P: FnMut(&T) -> bool {
+        self.0.iter().find(|elem| predicate(elem))
+    }
 }
 
 impl<T: XdrCodec, const N: i32> XdrCodec for LimitedVarArray<T, N> {
@@ -301,12 +306,14 @@ mod tests {
     }
 
     #[test]
-    fn pop_limitedarray() {
+    fn pop_and_find_limitedarray() {
         let sample_vec = vec![0,1,2,3,4];
         let mut sample_limited_array = LimitedVarArray::<u8,5>::new(sample_vec).expect("should return just fine");
         let len = sample_limited_array.len();
         let popped = sample_limited_array.pop();
         assert_eq!(popped, Some(4));
         assert_ne!(sample_limited_array.len(), len);
+
+        assert!(sample_limited_array.get_element(|elem| *elem == 2).is_some());
     }
 }
