@@ -160,6 +160,18 @@ impl<T, const N: i32> LimitedVarArray<T, N> {
         &self.0
     }
 
+    /// Searches for an element in the array that satisfies the predicate.
+    ///
+    /// # Arguments
+    ///
+    /// * `predicate` - a closure that applies to each element of the array.
+    ///                 Returns `true` if any of them return `true`, then get_element() returns Some(element)
+    ///                 If they all return `false`, `get_element()` returns None.
+    pub fn get_element<P>(&self, mut predicate:P) -> Option<&T>
+        where P: FnMut(&T) -> bool {
+        self.0.iter().find(|elem| predicate(elem))
+    }
+
     pub fn len(&self) -> usize {
         self.0.len()
     }
@@ -176,14 +188,11 @@ impl<T, const N: i32> LimitedVarArray<T, N> {
         Ok(())
     }
 
+    /// Removes an element from the end of the array and returns it, or `None` if it is empty.
     pub fn pop(&mut self) -> Option<T> {
         self.0.pop()
     }
 
-    pub fn get_element<P>(&self, mut predicate:P) -> Option<&T>
-    where P: FnMut(&T) -> bool {
-        self.0.iter().find(|elem| predicate(elem))
-    }
 }
 
 impl<T: XdrCodec, const N: i32> XdrCodec for LimitedVarArray<T, N> {
@@ -306,7 +315,7 @@ mod tests {
     }
 
     #[test]
-    fn pop_and_find_limitedarray() {
+    fn pop_and_find_limited_array() {
         let sample_vec = vec![0,1,2,3,4];
         let mut sample_limited_array = LimitedVarArray::<u8,5>::new(sample_vec).expect("should return just fine");
         let len = sample_limited_array.len();
