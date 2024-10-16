@@ -1,4 +1,4 @@
-use crate::lib::{String, format};
+use crate::lib::String;
 use crate::XdrCodec;
 
 /// A trait used to convert any Stellar specific type `T` as a String
@@ -20,6 +20,7 @@ pub trait StellarTypeToBase64String {
 impl <T: XdrCodec> StellarTypeToBase64String for T {
     fn as_base64_encoded_string(&self) -> String {
         let xdr = self.to_base64_xdr();
-        String::from_utf8(xdr.clone()).unwrap_or(format!("{:?}", xdr))
+        // safe to use `unwrap`, since `to_base64_xdr()` will always return a valid vec of
+        String::from_utf8(xdr.clone()).unwrap()
     }
 }
