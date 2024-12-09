@@ -53,7 +53,7 @@ pub use xdr::impls::transaction_set_type::*;
 #[allow(unused_imports)]
 pub use xdr::impls::error::*;
 
-pub use utils::std::StellarTypeToString;
+pub use utils::std::*;
 
 pub use amount::*;
 pub use binary::*;
