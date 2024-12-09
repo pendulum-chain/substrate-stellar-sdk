@@ -16,7 +16,7 @@ serde = { version = "1.0.195", default-features = false, features = ["derive", "
 hex = { version = "0.4.3", default-features = false , features = ["alloc"]}
 sodalite = { version = "0.4.0", default-features = false }
 sha2 = { default-features = false, version = "0.10.8" }
-lazy_static = { version = "1.4.0", features = ["spin_no_std"] }
+lazy_static = { version = "1.4.0", default-features = false, features = ["spin_no_std"] }
 base64 = { default-features = false, version = "0.13.1" }
 num-rational = {version = "0.4", default-features = false}
 scale-info = {version = "2.10.0", default-features = false, features = ["derive"]}
