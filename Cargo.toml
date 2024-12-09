@@ -38,5 +38,9 @@ std = [
   "serde/std",
   "scale-info/std",
   "hex/std",
-  "num-rational/std"
+  "num-rational/std",
+  "sha2/std",
+  "base64/std",
+  "num-rational/std",
+  "scale-info/std"
 ]
