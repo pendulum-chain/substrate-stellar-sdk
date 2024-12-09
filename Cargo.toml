@@ -29,18 +29,16 @@ sp-io = {  git = "https://github.com/paritytech/polkadot-sdk", branch = "release
 [features]
 default = [ "offchain", "std" ]
 all-types = []
-offchain = [ "sp-runtime", "sp-io", "serde_json", "serde" ]
+offchain = [ "serde", "serde_json", "sp-io", "sp-runtime" ]
 std = [
-  "sp-runtime/std",
-  "sp-std/std",
-  "sp-io/std",
-  "serde_json/std",
-  "serde/std",
-  "scale-info/std",
-  "hex/std",
-  "num-rational/std",
-  "sha2/std",
-  "base64/std",
-  "num-rational/std",
-  "scale-info/std"
+	"base64/std",
+	"hex/std",
+	"num-rational/std",
+	"scale-info/std",
+	"serde/std",
+	"serde_json/std",
+	"sha2/std",
+	"sp-io/std",
+	"sp-runtime/std",
+	"sp-std/std",
 ]
