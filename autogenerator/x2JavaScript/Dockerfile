@@ -1,5 +1,5 @@
-FROM ruby:alpine
-#FROM ruby:3.2.6-alpine3.20
+#FROM ruby:alpine
+FROM ruby:3.2.6-alpine3.20
 
 WORKDIR /data
 
