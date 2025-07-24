@@ -43,7 +43,7 @@ impl GeneralizedTransactionSet {
 
         for phase in txset_v1.phases.get_vec() {
             let TransactionPhase::V0(txsets_comp) = phase else {
-                return None;
+                continue;
             };
 
             for TxSetComponent::TxsetCompTxsMaybeDiscountedFee(discounted_txs_set) in txsets_comp.get_vec() {
