@@ -2,7 +2,8 @@
 rm -rf ./generated
 mkdir ./generated
 docker build -t xdr-gen .
-docker run -it \
+docker run --rm \
 	--mount type=bind,source="$(pwd)"/generated,target=/data/src/generated \
+	${GITHUB_TOKEN:+-e GITHUB_TOKEN="$GITHUB_TOKEN"} \
 	xdr-gen
 mv ./generated/stellar-xdr_generated.js ./generated/stellar-xdr_generated.ts
