@@ -16,10 +16,10 @@ namespace :xdr do
                  "Stellar-internal.x",
                  "Stellar-contract-config-setting.x",
                  "Stellar-contract.x",
-                 "Stellar-contract-config-setting.x",
                  "Stellar-contract-env-meta.x",
                  "Stellar-contract-meta.x",
-                 "Stellar-contract-spec.x"
+                 "Stellar-contract-spec.x",
+                 "Stellar-exporter.x"
 
                 ]
 
@@ -32,11 +32,13 @@ namespace :xdr do
     FileUtils.rm_rf "xdr"
     FileUtils.mkdir_p "xdr"
 
-    client = Octokit::Client.new
+    client_options = {}
+    client_options[:access_token] = ENV['GITHUB_TOKEN'] if ENV['GITHUB_TOKEN']
+    client = Octokit::Client.new(client_options)
 
     HAYASHI_XDR.each do |src|
       local_path = "xdr/" + File.basename(src)
-      encoded    = client.contents("stellar/stellar-xdr", path: src).content
+      encoded    = client.contents("stellar/stellar-xdr", path: src, ref: "curr").content
       decoded    = Base64.decode64 encoded
 
       IO.write(local_path, decoded)
